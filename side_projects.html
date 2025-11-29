@@ -7,7 +7,7 @@
     <!-- 引入 FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 沿用 Index 的變數系統 */
+        /* --- 沿用 Index 的變數系統 (保持風格一致) --- */
         :root {
             --bg-color: #0d1117;       
             --bg-gradient: radial-gradient(circle at top right, #1f293a 0%, #0d1117 40%);
@@ -34,7 +34,7 @@
 
         a { text-decoration: none; transition: 0.2s; }
 
-        /* 導覽列 */
+        /* 簡易導覽列 */
         nav {
             position: fixed; top: 0; width: 100%;
             background: rgba(13, 17, 23, 0.95);
@@ -48,10 +48,12 @@
         .back-link { color: var(--text-muted); font-size: 0.95rem; }
         .back-link:hover { color: var(--accent); }
 
+        /* 主容器 */
         .container {
             max-width: 1000px;
             margin: 0 auto;
             padding: 7rem 2rem 4rem 2rem;
+            min-height: 100vh;
         }
 
         h1 { font-size: 2.5rem; margin-bottom: 1rem; color: var(--text-main); text-align: center; }
@@ -64,7 +66,7 @@
             color: var(--text-main);
         }
 
-        /* 小工具網格 */
+        /* --- 1. 小工具網格 --- */
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -87,7 +89,7 @@
         }
         .tool-link:hover { background: var(--accent-glow); }
 
-        /* 遊戲網格 (Game Arcade) */
+        /* --- 2. 遊戲網格 (Arcade) --- */
         .game-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -111,45 +113,58 @@
         .game-thumbnail {
             width: 100%;
             height: 120px;
-            background: #21262d;
+            background: #21262d; /* 之後可以換成遊戲截圖 */
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 3rem;
             color: var(--text-muted);
+            transition: 0.3s;
         }
+        .game-card:hover .game-thumbnail { color: var(--accent); }
         .game-title {
             margin-top: 15px;
             font-weight: bold;
             color: var(--text-main);
         }
 
-        /* 遊戲播放器 (Game Viewer) - Sub-frame 概念 */
+        /* --- 3. 遊戲播放器 (Game Viewer) --- */
+        /* 這就是所謂的 Sub-frame 區域，平常隱藏 */
         #game-viewer {
-            display: none; /* 預設隱藏 */
-            margin-top: 30px;
-            background: #000;
-            border: 2px solid var(--accent);
+            display: none; 
+            margin-top: 40px;
+            background: #0d1117;
+            border: 1px solid var(--accent);
             border-radius: 8px;
-            padding: 10px;
-            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            animation: fadeIn 0.5s;
         }
         
         .viewer-header {
+            background: #161b22;
+            padding: 10px 20px;
             display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 10px; padding: 0 10px;
+            border-bottom: 1px solid var(--border);
         }
-        .viewer-title { color: var(--accent); font-weight: bold; }
+        .viewer-title { color: var(--accent); font-weight: bold; font-family: monospace; }
         .close-btn { 
-            color: #e5534b; cursor: pointer; font-size: 1.2rem;
+            color: #e5534b; cursor: pointer; font-size: 1.1rem; transition: 0.2s;
         }
+        .close-btn:hover { color: #ff7b72; transform: scale(1.1); }
 
-        /* Iframe 設定：這就是你的「子框架」，可以載入獨立的 HTML */
+        /* Iframe: 載入獨立 HTML 的視窗 */
         #game-frame {
             width: 100%;
-            height: 500px;
+            height: 600px; /* 足夠的高度 */
             border: none;
-            background: #111;
+            background: #000;
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* Footer */
@@ -173,31 +188,53 @@
         <!-- 1. 實用工具區 -->
         <h2><i class="fa-solid fa-toolbox"></i> 實用小工具</h2>
         <div class="tools-grid">
+            
             <div class="tool-card">
                 <div class="tool-icon"><i class="fa-solid fa-file-code"></i></div>
                 <div class="tool-title">Log Parser</div>
                 <div class="tool-desc">快速分析 Server Log 並產出 Excel 報表的小工具。</div>
                 <a href="#" class="tool-link"><i class="fa-brands fa-github"></i> View Code</a>
             </div>
-            <!-- 其他工具可自行複製增加 -->
+
+            <div class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-robot"></i></div>
+                <div class="tool-title">Auto Clicker</div>
+                <div class="tool-desc">簡單的滑鼠連點程式，適用於重複性作業。</div>
+                <a href="#" class="tool-link"><i class="fa-brands fa-github"></i> View Code</a>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon"><i class="fa-solid fa-network-wired"></i></div>
+                <div class="tool-title">IP Scanner</div>
+                <div class="tool-desc">區域網路設備掃描工具，快速找出佔用 IP。</div>
+                <a href="#" class="tool-link"><i class="fa-brands fa-github"></i> View Code</a>
+            </div>
+
         </div>
 
         <!-- 2. 摸魚遊戲區 -->
         <h2><i class="fa-solid fa-ghost"></i> 摸魚專區 (Arcade)</h2>
         
-        <!-- 遊戲選單列表 -->
         <div class="game-grid">
-            <!-- 貪食蛇卡片：點擊後會在下方開啟 -->
-            <!-- 未來你有新遊戲 (例如 tetris.html)，就複製這塊改一下 onclick 參數即可 -->
-            <div class="game-card" onclick="playGame('snake.html', '貪食蛇 (Snake)')">
+            <!-- 貪食蛇卡片 -->
+            <!-- 這裡預設連結到 snake.html，如果你還沒做，它會顯示 404 或載入 placeholder -->
+            <div class="game-card" onclick="playGame('snake.html', '經典貪食蛇 (Snake)')">
                 <div class="game-thumbnail">
                     <i class="fa-solid fa-staff-snake"></i>
                 </div>
                 <div class="game-title">經典貪食蛇</div>
             </div>
 
-            <!-- 範例：未來新增的遊戲 -->
-            <div class="game-card" onclick="alert('敬請期待！')">
+            <!-- 俄羅斯方塊 (範例) -->
+            <div class="game-card" onclick="alert('開發中... 敬請期待！')">
+                <div class="game-thumbnail">
+                    <i class="fa-solid fa-cubes"></i>
+                </div>
+                <div class="game-title">俄羅斯方塊</div>
+            </div>
+            
+            <!-- 更多遊戲 -->
+            <div class="game-card" onclick="alert('開發中...')">
                 <div class="game-thumbnail">
                     <i class="fa-solid fa-gamepad"></i>
                 </div>
@@ -211,7 +248,7 @@
                 <span class="viewer-title" id="viewer-title">遊戲標題</span>
                 <span class="close-btn" onclick="closeGame()"><i class="fa-solid fa-xmark"></i> 關閉遊戲</span>
             </div>
-            <!-- 這裡就是所謂的 Sub-frame，它會載入獨立的 HTML 檔案 -->
+            <!-- Sub-frame: 這裡會動態載入遊戲檔案 -->
             <iframe id="game-frame" src=""></iframe>
         </div>
 
@@ -225,29 +262,44 @@
         function playGame(url, title) {
             // 1. 設定標題
             document.getElementById('viewer-title').innerText = title;
-            // 2. 設定 iframe 網址 (載入遊戲)
-            // 由於目前還沒有 snake.html，這裡我先放一個 placeholder 避免 404
-            // 等你做好 snake.html 後，這行邏輯就會正常運作
             
-            // document.getElementById('game-frame').src = url; 
+            // 2. 顯示播放器區塊
+            const viewer = document.getElementById('game-viewer');
+            viewer.style.display = 'block';
             
-            // 為了演示效果，我先讓它顯示一個提示
-            let frame = document.getElementById('game-frame');
-            // 實際使用請解開上面那行，並刪除下面這行
-            frame.srcdoc = `<body style="color:white; background:#111; display:flex; justify-content:center; align-items:center; height:100%; margin:0; font-family:sans-serif;"><h1>正在載入 ${title}...<br><small>(請確認 ${url} 檔案存在)</small></h1></body>`;
+            // 3. 設定 Iframe 內容
+            const frame = document.getElementById('game-frame');
+            
+            // --- 暫時性的 Placeholder 邏輯 (等你真的有 snake.html 後可移除這段 if) ---
+            // 為了讓你在沒有 snake.html 時也能看到效果，我加了檢測
+            // 實際上線時，直接用 frame.src = url; 即可
+            
+            // 模擬載入 (實際請把這行改成 frame.src = url;)
+            // frame.src = url; 
+            
+            // 暫時顯示一個說明畫面，方便你測試 layout
+            frame.srcdoc = `
+                <body style="background-color:#000; color:#58a6ff; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; margin:0; font-family:sans-serif;">
+                    <h2 style="margin-bottom:10px;">正在載入 ${title}...</h2>
+                    <p style="color:#8b949e;">( 這是子框架區域 iframe )</p>
+                    <p style="color:#8b949e; font-size:0.8rem;">請確認你的資料夾內是否有 <b>${url}</b> 檔案</p>
+                    <div style="margin-top:20px; width:40px; height:40px; border:3px solid #333; border-top:3px solid #58a6ff; border-radius:50%; animation:spin 1s linear infinite;"></div>
+                    <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+                </body>
+            `;
 
-            // 3. 顯示播放器區塊
-            document.getElementById('game-viewer').style.display = 'block';
-            
             // 4. 自動捲動到遊戲區
-            document.getElementById('game-viewer').scrollIntoView({ behavior: 'smooth' });
+            viewer.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
         function closeGame() {
-            // 隱藏並清空 src 以停止遊戲運作
-            document.getElementById('game-viewer').style.display = 'none';
-            document.getElementById('game-frame').src = '';
-            document.getElementById('game-frame').removeAttribute('srcdoc');
+            // 關閉時清空 src，停止遊戲運作（避免背景音效或運算繼續）
+            const viewer = document.getElementById('game-viewer');
+            const frame = document.getElementById('game-frame');
+            
+            viewer.style.display = 'none';
+            frame.src = '';
+            frame.removeAttribute('srcdoc');
         }
     </script>
 </body>

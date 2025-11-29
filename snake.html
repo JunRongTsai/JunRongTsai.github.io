@@ -2,677 +2,358 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>蔡俊榮 (Rowan) | CIM 電腦整合製造工程師</title>
-    <!-- 引入 FontAwesome 圖標庫 (用於裝飾) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>經典貪食蛇 | Arcade</title>
+    <!-- 引入 FontAwesome 圖標 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- 1. CSS 變數系統 --- */
+        /* --- 變數系統 (配合主站風格) --- */
         :root {
-            --bg-color: #0d1117;       /* 深灰底色 */
-            --bg-gradient: radial-gradient(circle at top right, #1f293a 0%, #0d1117 40%);
-            --card-bg: rgba(22, 27, 34, 0.8); /* 半透明卡片背景 */
-            --text-main: #f0f6fc;      
-            --text-muted: #8b949e;     
-            --accent: #58a6ff;         /* 亮藍色 */
-            --accent-glow: rgba(88, 166, 255, 0.3);
-            --border: #30363d;         
-            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Helvetica, Arial, sans-serif;
+            --bg-color: #0d1117;
+            --accent: #58a6ff;
+            --food: #ff7b72;
+            --snake-head: #58a6ff;
+            --snake-body: #8b949e;
+            --text-main: #f0f6fc;
+            --border: #30363d;
         }
 
-        /* --- 2. 基礎設定 & 動畫 --- */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
 
         body {
-            background-color: var(--bg-color);
-            background-image: var(--bg-gradient);
-            background-attachment: fixed; /* 背景固定，製造視差感 */
+            background-color: #000; /* 遊戲區用全黑背景比較有沉浸感 */
             color: var(--text-main);
-            font-family: var(--font-stack);
-            line-height: 1.7;
-            overflow-x: hidden;
+            font-family: 'Segoe UI', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden; /* 防止遊戲時畫面滑動 */
         }
 
-        /* 滾動動畫核心樣式：預設隱藏並下移 */
-        .reveal {
-            opacity: 0;
-            transform: translateY(50px); /* 增加位移距離，讓動畫更明顯 */
-            transition: all 0.8s ease-out;
-        }
-
-        /* 當元素加上 .active class 後，恢復原狀 */
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        a { text-decoration: none; transition: 0.2s; }
-
-        /* --- 3. 導覽列 --- */
-        nav {
-            position: fixed;
-            top: 0;
+        /* --- 遊戲資訊看板 --- */
+        .game-header {
             width: 100%;
-            background: rgba(13, 17, 23, 0.9); /* 稍微加深透明度 */
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 1rem 5%;
+            max-width: 400px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            z-index: 1000;
-            transition: transform 0.3s ease-in-out; /* 增加滑動隱藏的過渡效果 */
+            margin-bottom: 10px;
+            padding: 0 10px;
         }
+
+        .score-box {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .score-box span { color: var(--accent); }
         
-        /* 導覽列隱藏狀態 */
-        nav.nav-hidden {
-            transform: translateY(-100%);
+        .high-score {
+            font-size: 0.9rem;
+            color: #8b949e;
         }
 
-        .nav-logo { font-size: 1.3rem; font-weight: 800; color: var(--text-main); letter-spacing: 1px; }
-        .nav-logo span { color: var(--accent); }
-        
-        .nav-links { display: flex; gap: 25px; }
-        .nav-links a { color: var(--text-muted); font-size: 0.95rem; font-weight: 500; position: relative; }
-        .nav-links a:hover { color: var(--accent); }
-        /* 導覽列連結下劃線動畫 */
-        .nav-links a::after {
-            content: ''; position: absolute; width: 0; height: 2px;
-            bottom: -5px; left: 0; background-color: var(--accent);
-            transition: width 0.3s;
-        }
-        .nav-links a:hover::after { width: 100%; }
-
-        /* --- 4. 區塊通用 --- */
-        section {
-            padding: 7rem 10%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        h2 {
-            font-size: 2.2rem;
-            margin-bottom: 3rem;
-            display: flex;
-            align-items: center;
-            color: var(--text-main);
-            position: relative;
-        }
-        h2::before {
-            content: attr(data-index);
-            color: var(--accent);
-            font-family: monospace;
-            font-size: 1.5rem;
-            margin-right: 15px;
-        }
-        h2::after {
-            content: ""; display: block; width: 200px; height: 1px;
-            background: linear-gradient(90deg, var(--border), transparent);
-            margin-left: 20px;
-        }
-
-        /* --- 5. Hero 首頁 --- */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 60px;
-            padding-top: 0;
-        }
-
-        .hero-content { flex: 1; }
-        
-        .hero-greeting { 
-            color: var(--accent); font-family: monospace; font-size: 1.1rem; 
-            margin-bottom: 1rem; display: block;
-        }
-
-        .hero h1 {
-            font-size: 4rem;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            font-weight: 800;
-        }
-        
-        .hero h2 {
-            font-size: 2rem; color: var(--text-muted); 
-            border: none; margin: 0 0 1.5rem 0;
+        /* --- 畫布設定 --- */
+        canvas {
+            background-color: var(--bg-color);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            box-shadow: 0 0 20px rgba(88, 166, 255, 0.1);
             display: block;
         }
-        .hero h2::before, .hero h2::after { content: none; }
 
-        .hero p {
-            font-size: 1.1rem;
-            color: var(--text-muted);
-            max-width: 600px;
-            margin-bottom: 2.5rem;
-            line-height: 1.8;
-        }
-
-        .cta-group { display: flex; gap: 15px; }
-
-        .cta-button {
-            padding: 14px 32px;
-            border: 1px solid var(--accent);
-            border-radius: 5px;
-            color: var(--accent);
-            font-weight: 600;
-            position: relative;
-            overflow: hidden;
-            z-index: 1;
-        }
-        .cta-button::before {
-            content: ""; position: absolute; top: 0; left: 0; width: 0; height: 100%;
-            background: var(--accent-glow); transition: width 0.3s; z-index: -1;
-        }
-        .cta-button:hover::before { width: 100%; }
-
-        /* Profile Image (修改版：穩重科技風) */
-        .profile-container {
-            position: relative;
-            width: 300px; height: 300px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        /* 移除旋轉動畫，改為靜態層次感 */
-        .profile-wrapper {
-            position: relative;
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            z-index: 2;
-        }
-
-        .profile-img {
-            width: 100%; height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            /* 改用雙層邊框質感：內圈 accent，外圈深色隔開 */
-            border: 4px solid var(--bg-color); 
-            box-shadow: 0 0 0 4px var(--accent), 0 0 40px rgba(88, 166, 255, 0.4);
-            transition: all 0.5s ease;
-        }
-
-        /* 懸浮時的微互動：呼吸燈效果 */
-        .profile-container:hover .profile-img {
-            transform: scale(1.03); /* 輕微放大 */
-            box-shadow: 0 0 0 4px var(--accent), 0 0 60px rgba(88, 166, 255, 0.7);
-        }
-
-        /* 裝飾性背景圓環 (靜態科技感) */
-        .profile-container::after {
-            content: ""; position: absolute;
-            top: -15px; left: -15px; right: -15px; bottom: -15px;
-            border: 1px solid var(--border);
-            border-radius: 50%;
-            z-index: 0;
-            opacity: 0.6;
-            transition: all 0.5s ease;
-        }
-        
-        .profile-container:hover::after {
-            border-color: var(--accent);
-            opacity: 0.3;
-            transform: scale(1.1);
-        }
-
-        /* --- 6. 職涯經歷 --- */
-        .timeline {
-            position: relative;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        /* 中間的線 */
-        .timeline::before {
-            content: '';
+        /* --- 狀態訊息 (開始/暫停/結束) --- */
+        #status-overlay {
             position: absolute;
-            left: 80px; 
-            top: 0; bottom: 0;
-            width: 2px;
-            background: var(--border);
-        }
-
-        .job-card {
-            position: relative;
-            margin-bottom: 3.5rem;
-            padding-left: 120px; 
-        }
-
-        /* 時間軸上的點 */
-        .job-card::after {
-            content: '';
-            position: absolute;
-            left: 76px; 
-            top: 25px;
-            width: 10px; height: 10px;
-            background: var(--bg-color);
-            border: 2px solid var(--accent);
-            border-radius: 50%;
-            z-index: 2;
-            transition: background 0.3s;
-        }
-        .job-card:hover::after { background: var(--accent); }
-
-        .company-logo {
-            position: absolute;
-            left: 0; top: 5px;
-            width: 60px; height: 60px;
-            background: #fff;
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            border: 2px solid var(--border);
-        }
-        .company-logo img {
-            width: 90%; height: auto;
-            object-fit: contain;
-        }
-        .logo-placeholder {
-            font-weight: bold; color: #333; font-size: 0.8rem; text-align: center;
-        }
-
-        .job-content {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            transition: transform 0.3s, border-color 0.3s;
-        }
-        .job-card:hover .job-content {
-            transform: translateY(-5px);
-            border-color: var(--accent);
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-        }
-
-        .job-header {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            margin-bottom: 10px; flex-wrap: wrap;
-        }
-        .job-title { font-size: 1.3rem; font-weight: 700; color: var(--text-main); }
-        .job-company { color: var(--accent); font-weight: 500; font-size: 1.1rem; }
-        .job-period { 
-            font-family: monospace; font-size: 0.9rem; color: var(--text-muted);
-            background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;
-        }
-        
-        .job-details li { margin-bottom: 8px; color: var(--text-muted); list-style-type: none; position: relative; padding-left: 20px; }
-        .job-details li::before {
-            content: "▹"; position: absolute; left: 0; color: var(--accent);
-        }
-
-        /* --- 7. 專案網格 --- */
-        .project-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
-        }
-        .project-card {
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            transition: all 0.3s ease;
-            display: flex; flex-direction: column; height: 100%;
-        }
-        .project-card:hover {
-            transform: translateY(-7px);
-            border-color: var(--accent);
-            background: rgba(22, 27, 34, 1);
-        }
-        
-        .project-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .folder-icon { color: var(--accent); font-size: 2rem; }
-        .project-links a { color: var(--text-muted); margin-left: 15px; font-size: 1.2rem; }
-        .project-links a:hover { color: var(--accent); }
-
-        .project-card h3 { font-size: 1.4rem; margin-bottom: 1rem; color: var(--text-main); }
-        .project-desc { color: var(--text-muted); font-size: 0.95rem; flex-grow: 1; margin-bottom: 1.5rem; }
-        
-        .tech-tags { display: flex; flex-wrap: wrap; gap: 10px; font-family: monospace; font-size: 0.8rem; color: var(--text-muted); }
-        .tech-tags span { color: var(--accent); }
-
-        /* --- 8. 技能區塊 --- */
-        .skills-container {
-            display: flex; flex-wrap: wrap; gap: 20px;
-        }
-        .skill-box {
-            flex: 1 1 300px;
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-        }
-        .skill-box h3 {
-            color: var(--accent); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
-        }
-        .skill-list span {
-            display: inline-block;
-            margin: 5px;
-            padding: 5px 12px;
-            background: #21262d;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            border: 1px solid transparent;
-            transition: 0.3s;
-        }
-        .skill-list span:hover {
-            border-color: var(--accent);
-            color: var(--text-main);
-            box-shadow: 0 0 10px var(--accent-glow);
-            transform: scale(1.05);
-        }
-
-        /* --- Footer --- */
-        footer {
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
-            padding: 4rem 2rem;
-            color: var(--text-muted);
-            font-size: 0.9rem;
+            background: rgba(13, 17, 23, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid var(--accent);
+            display: none; /* 預設隱藏 */
+            z-index: 10;
         }
-        .social-links { margin-bottom: 20px; }
-        .social-links a { font-size: 1.5rem; color: var(--text-muted); margin: 0 15px; }
-        .social-links a:hover { color: var(--accent); }
+        #status-overlay h2 { margin-bottom: 10px; color: var(--accent); }
+        #status-overlay p { font-size: 0.9rem; color: #8b949e; margin-bottom: 15px; }
+        
+        .btn {
+            background: var(--accent);
+            color: #0d1117;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .btn:hover { opacity: 0.9; }
 
-        /* --- RWD --- */
+        /* --- 虛擬按鍵 (手機版顯示) --- */
+        .mobile-controls {
+            display: none;
+            margin-top: 20px;
+            grid-template-areas:
+                ". up ."
+                "left down right";
+            gap: 10px;
+        }
+        
+        .control-btn {
+            width: 60px; height: 60px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            color: var(--text-main);
+            font-size: 1.5rem;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+        }
+        .control-btn:active { background: var(--accent); color: #000; }
+
+        /* 只有在觸控裝置或螢幕太窄時顯示 */
         @media (max-width: 768px) {
-            .hero { flex-direction: column-reverse; text-align: center; padding-top: 6rem; justify-content: center; }
-            .hero h1 { font-size: 2.8rem; }
-            .nav-links { display: none; }
-            section { padding: 5rem 6%; }
-            .timeline::before { left: 20px; }
-            .job-card { padding-left: 50px; }
-            .job-card::after { left: 16px; }
-            .company-logo { 
-                position: relative; width: 50px; height: 50px; margin-bottom: 10px; 
-                left: auto; top: auto; 
-            }
-            .job-header { flex-direction: column; }
+            .mobile-controls { display: grid; }
+            canvas { max-width: 95vw; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 導覽列 -->
-    <nav id="navbar">
-        <div class="nav-logo">Rowan<span>.Dev</span></div>
-        <div class="nav-links">
-            <a href="#about">關於我</a>
-            <a href="#experience">職涯</a>
-            <a href="#projects">專案</a>
-            <a href="#skills">技能</a>
-        </div>
-    </nav>
+    <div class="game-header">
+        <div class="score-box">Score: <span id="score">0</span></div>
+        <div class="high-score">High: <span id="highScore">0</span></div>
+    </div>
 
-    <!-- 1. 首頁 Hero -->
-    <section class="hero" id="about">
-        <div class="hero-content reveal">
-            <span class="hero-greeting">Hi, I am</span>
-            <h1>蔡俊榮 (Rowan)</h1>
-            <h2>CIM 電腦整合製造工程師</h2>
-            <p>
-                擅長將工廠的「噪音」轉化為「數據」。<br>
-                專注於 <b>MES 系統開發</b>、<b>PLC 設備通訊</b> 與 <b>自動化流程設計</b>。<br>
-                致力於用程式碼解決產線痛點，打造穩定高效的製造系統。
-            </p>
-            <div class="cta-group">
-                <a href="mailto:markben841027@gmail.com" class="cta-button">
-                    <i class="fa-regular fa-envelope"></i> 聯絡我
-                </a>
-            </div>
-        </div>
+    <!-- 遊戲畫布 -->
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
 
-        <div class="profile-container reveal">
-            <div class="profile-wrapper">
-                <!-- 圖片路徑 -->
-                <img src="images/profile.jpg" alt="Rowan Tsai" class="profile-img">
-            </div>
-        </div>
-    </section>
+    <!-- 狀態覆蓋層 (Start / Game Over / Pause) -->
+    <div id="status-overlay">
+        <h2 id="overlay-title">Ready?</h2>
+        <p id="overlay-msg">Press Start or Space to play</p>
+        <button class="btn" onclick="startGame()">Start Game</button>
+    </div>
 
-    <!-- 2. 職涯經歷 (重點：滾動特效 + Logo) -->
-    <section id="experience">
-        <h2 data-index="01.">職涯經歷</h2>
-        
-        <div class="timeline">
-            
-            <!-- Job 1: 華新科技 -->
-            <div class="job-card reveal">
-                <div class="company-logo">
-                    <img src="images/walsin.png" alt="Walsin Technology" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <div class="logo-placeholder" style="display:none;">Walsin</div>
-                </div>
-                <div class="job-content">
-                    <div class="job-header">
-                        <div>
-                            <div class="job-title">CIM 工程師</div>
-                            <div class="job-company">華新科技 (Walsin Technology)</div>
-                        </div>
-                        <span class="job-period">2025/10 - 現今</span>
-                    </div>
-                    <ul class="job-details">
-                        <li>負責 MES (製造執行系統) 功能開發與維護，確保產線資訊流穩定。</li>
-                        <li>整合生產設備數據 (IoT)，優化製程參數收集流程。</li>
-                        <li>開發自動化工具，提升工廠營運效率。</li>
-                    </ul>
-                </div>
-            </div>
+    <!-- 手機虛擬搖桿 -->
+    <div class="mobile-controls">
+        <div class="control-btn" style="grid-area: up;" onclick="changeDirection('UP')"><i class="fa-solid fa-arrow-up"></i></div>
+        <div class="control-btn" style="grid-area: left;" onclick="changeDirection('LEFT')"><i class="fa-solid fa-arrow-left"></i></div>
+        <div class="control-btn" style="grid-area: down;" onclick="changeDirection('DOWN')"><i class="fa-solid fa-arrow-down"></i></div>
+        <div class="control-btn" style="grid-area: right;" onclick="changeDirection('RIGHT')"><i class="fa-solid fa-arrow-right"></i></div>
+    </div>
 
-            <!-- Job 2: 先進光電 -->
-            <div class="job-card reveal">
-                <div class="company-logo">
-                    <img src="images/aoet.png" alt="AOET" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <div class="logo-placeholder" style="display:none;">AOET</div>
-                </div>
-                <div class="job-content">
-                    <div class="job-header">
-                        <div>
-                            <div class="job-title">MES 工程師</div>
-                            <div class="job-company">先進光電 (AOET)</div>
-                        </div>
-                        <span class="job-period">2023/06 - 2025/09</span>
-                    </div>
-                    <ul class="job-details">
-                        <li><b>MES 系統客製化</b>：使用 C# 設計操作介面與控制邏輯。</li>
-                        <li><b>自動化排程</b>：利用 WinForms 與批次腳本建立報表自動寄送機制。</li>
-                        <li><b>流程自動化 (RPA)</b>：維護 UiPath 流程，減少人工操作。</li>
-                        <li><b>資料處理</b>：撰寫 Python 爬蟲與 Excel VBA，提升資料整合效率。</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Job 3: 鼎新數智 -->
-            <div class="job-card reveal">
-                <div class="company-logo">
-                    <img src="images/digiwin.png" alt="Digiwin" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                    <div class="logo-placeholder" style="display:none;">Digiwin</div>
-                </div>
-                <div class="job-content">
-                    <div class="job-header">
-                        <div>
-                            <div class="job-title">軟體工程師</div>
-                            <div class="job-company">鼎新數智 (Digiwin)</div>
-                        </div>
-                        <span class="job-period">2019/10 - 2023/06</span>
-                    </div>
-                    <ul class="job-details">
-                        <li><b>報表平台開發</b>：使用 FineReport 整合 Oracle DB。</li>
-                        <li><b>Web 全端開發</b>：使用 Java Web, HTML, TypeScript 維護系統。</li>
-                        <li><b>系統整合</b>：協助 ETL 資料交換與 DevOps (Jenkins/SVN) 管理。</li>
-                    </ul>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- 3. 精選專案 -->
-    <section id="projects">
-        <h2 data-index="02.">精選專案</h2>
-        <div class="project-grid">
-            
-            <!-- Project 1 -->
-            <div class="project-card reveal">
-                <div class="project-top">
-                    <div class="folder-icon"><i class="fa-regular fa-folder"></i></div>
-                    <div class="project-links">
-                        <a href="#" title="GitHub"><i class="fa-brands fa-github"></i></a>
-                    </div>
-                </div>
-                <h3>PLC 即時監控系統</h3>
-                <div class="project-desc">
-                    透過 Modbus/TCP 協定與 Panasonic 及 Omron PLC 通訊。實現每 5 秒自動輪詢 (Polling) 機台數據，即時掌握產線設備狀態與異常警報。
-                </div>
-                <div class="tech-tags">
-                    <span>C#</span>
-                    <span>Modbus</span>
-                    <span>WinForms</span>
-                    <span>Multi-threading</span>
-                </div>
-            </div>
-
-            <!-- Project 2 -->
-            <div class="project-card reveal">
-                <div class="project-top">
-                    <div class="folder-icon"><i class="fa-regular fa-folder"></i></div>
-                </div>
-                <h3>AutoBackup 自動化工具</h3>
-                <div class="project-desc">
-                    開發 Windows Service 工具，自動偵測關鍵資料夾變動並進行壓縮備份。包含完整 Log 記錄與排程設定，大幅降低人工備份成本。
-                </div>
-                <div class="tech-tags">
-                    <span>C#</span>
-                    <span>IO Stream</span>
-                    <span>Automation</span>
-                </div>
-            </div>
-
-            <!-- Project 3 -->
-            <div class="project-card reveal">
-                <div class="project-top">
-                    <div class="folder-icon"><i class="fa-regular fa-folder"></i></div>
-                </div>
-                <h3>自動化郵件報表系統</h3>
-                <div class="project-desc">
-                    整合 WinForms 與 Python 腳本，每日自動產出機台良率與產能報表。將數據視覺化並自動寄送給部門主管。
-                </div>
-                <div class="tech-tags">
-                    <span>Python</span>
-                    <span>VBA</span>
-                    <span>SMTP</span>
-                    <span>RPA</span>
-                </div>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- 4. 技能 & 學歷 -->
-    <section id="skills">
-        <h2 data-index="03.">專業技能 & 學歷</h2>
-        
-        <div class="skills-container reveal">
-            
-            <div class="skill-box">
-                <h3><i class="fa-solid fa-code"></i> 後端與系統開發</h3>
-                <div class="skill-list">
-                    <span>C# (.NET)</span>
-                    <span>Java (Spring)</span>
-                    <span>Python</span>
-                    <span>WinForms</span>
-                    <span>RESTful API</span>
-                </div>
-            </div>
-
-            <div class="skill-box">
-                <h3><i class="fa-solid fa-database"></i> 資料庫與工具</h3>
-                <div class="skill-list">
-                    <span>Oracle SQL</span>
-                    <span>SQL Server</span>
-                    <span>Redis</span>
-                    <span>Git / SVN</span>
-                    <span>Jenkins</span>
-                </div>
-            </div>
-
-            <div class="skill-box">
-                <h3><i class="fa-solid fa-industry"></i> 領域知識</h3>
-                <div class="skill-list">
-                    <span>MES 系統</span>
-                    <span>PLC (Modbus)</span>
-                    <span>RPA</span>
-                    <span>ETL</span>
-                </div>
-            </div>
-
-            <!-- 學歷放在這裡，作為一個特別的 Box -->
-            <div class="skill-box" style="border-color: var(--accent);">
-                <h3><i class="fa-solid fa-graduation-cap"></i> 學歷</h3>
-                <p style="color: var(--text-main); font-weight: bold; margin-bottom: 5px;">國立高雄科技大學</p>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">資訊管理系 (2014 - 2018)</p>
-            </div>
-
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-        <div class="social-links">
-            <a href="mailto:markben841027@gmail.com"><i class="fa-solid fa-envelope"></i></a>
-            <!-- 這些連結目前是無效的，保留圖示裝飾 -->
-            <a href="#" class="disabled-link"><i class="fa-brands fa-github"></i></a>
-            <a href="#" class="disabled-link"><i class="fa-solid fa-user-tie"></i></a>
-        </div>
-        <p>Designed & Built by Rowan Tsai</p>
-        <p style="font-size: 0.8rem; margin-top: 10px;">&copy; 2025 All rights reserved.</p>
-    </footer>
-
-    <!-- JS: 滾動特效 & 導覽列互動腳本 -->
     <script>
-        // 1. 滾動特效 (Reveal on Scroll)
-        window.addEventListener('scroll', reveal);
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreEl = document.getElementById('score');
+        const highScoreEl = document.getElementById('highScore');
+        const overlay = document.getElementById('status-overlay');
+        const overlayTitle = document.getElementById('overlay-title');
+        const overlayMsg = document.getElementById('overlay-msg');
+        const startBtn = document.querySelector('#status-overlay .btn');
 
-        function reveal() {
-            var reveals = document.querySelectorAll('.reveal');
+        // --- 遊戲參數 ---
+        const box = 20; // 格子大小
+        let snake = [];
+        let food = {};
+        let score = 0;
+        let d; // 方向
+        let game; // Loop
+        let isPaused = false;
+        let isGameOver = false;
+        let gameSpeed = 100; // 毫秒 (越小越快)
 
-            for (var i = 0; i < reveals.length; i++) {
-                var windowheight = window.innerHeight;
-                var revealtop = reveals[i].getBoundingClientRect().top;
-                var revealpoint = 150; // 觸發點
+        // --- 讀取最高分 (localStorage) ---
+        let highScore = localStorage.getItem('snakeHighScore') || 0;
+        highScoreEl.innerText = highScore;
 
-                if (revealtop < windowheight - revealpoint) {
-                    reveals[i].classList.add('active');
-                } else {
-                    // 這裡就是你要的「回退」功能：當元素離開視窗範圍時，移除 active class
-                    // 這樣下次滑回來時，會再次觸發動畫
-                    reveals[i].classList.remove('active');
+        // --- 初始化 ---
+        function init() {
+            snake = [];
+            snake[0] = { x: 9 * box, y: 10 * box }; // 初始位置
+            score = 0;
+            d = null; // 初始靜止
+            isGameOver = false;
+            isPaused = false;
+            scoreEl.innerText = score;
+            createFood();
+            
+            // 清空畫布
+            ctx.fillStyle = "#0d1117";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            drawSnake(); // 畫出初始蛇
+            drawFood();  // 畫出初始食物
+            
+            showOverlay('Ready?', 'Use Arrow Keys or Buttons', 'Start Game');
+        }
+
+        function createFood() {
+            // 隨機產生食物，簡單防呆(避免生成在蛇身上...的簡易版)
+            food = {
+                x: Math.floor(Math.random() * (canvas.width / box)) * box,
+                y: Math.floor(Math.random() * (canvas.height / box)) * box
+            };
+        }
+
+        // --- 鍵盤監聽 ---
+        document.addEventListener('keydown', direction);
+
+        function direction(event) {
+            let key = event.keyCode;
+            
+            // 空白鍵 (32) -> 暫停/繼續
+            if (key == 32) {
+                togglePause();
+                return;
+            }
+
+            // 防止方向鍵捲動網頁
+            if([32, 37, 38, 39, 40].indexOf(key) > -1) {
+                event.preventDefault();
+            }
+
+            // 如果遊戲還沒開始或結束了，按方向鍵無效(除了Enter重新開始)
+            if (overlay.style.display === 'block' && !isPaused) return;
+
+            if (key == 37 && d != "RIGHT") d = "LEFT";
+            else if (key == 38 && d != "DOWN") d = "UP";
+            else if (key == 39 && d != "LEFT") d = "RIGHT";
+            else if (key == 40 && d != "UP") d = "DOWN";
+        }
+
+        // 手機版點擊控制
+        function changeDirection(newDir) {
+            if (overlay.style.display === 'block' && !isPaused) return;
+            if (newDir == "LEFT" && d != "RIGHT") d = "LEFT";
+            if (newDir == "UP" && d != "DOWN") d = "UP";
+            if (newDir == "RIGHT" && d != "LEFT") d = "RIGHT";
+            if (newDir == "DOWN" && d != "UP") d = "DOWN";
+        }
+
+        // --- 繪圖邏輯 ---
+        function draw() {
+            if (isPaused) return;
+
+            // 畫背景
+            ctx.fillStyle = "#0d1117";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawFood();
+            drawSnake();
+
+            // 蛇頭座標
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            // 移動邏輯
+            if (d == "LEFT") snakeX -= box;
+            if (d == "UP") snakeY -= box;
+            if (d == "RIGHT") snakeX += box;
+            if (d == "DOWN") snakeY += box;
+
+            // 如果沒方向(剛開始)，就不動
+            if (!d) return;
+
+            // 吃到食物
+            if (snakeX == food.x && snakeY == food.y) {
+                score++;
+                scoreEl.innerText = score;
+                // 更新最高分顯示
+                if (score > highScore) {
+                    highScore = score;
+                    highScoreEl.innerText = highScore;
+                    localStorage.setItem('snakeHighScore', highScore); // 存入瀏覽器
                 }
+                createFood();
+            } else {
+                snake.pop(); // 沒吃到，移除尾巴
+            }
+
+            // 碰撞檢測 (撞牆 或 撞自己)
+            let newHead = { x: snakeX, y: snakeY };
+
+            if (snakeX < 0 || snakeX >= canvas.width || 
+                snakeY < 0 || snakeY >= canvas.height || 
+                collision(newHead, snake)) {
+                
+                gameOver();
+                return;
+            }
+
+            snake.unshift(newHead); // 加入新頭
+        }
+
+        function drawSnake() {
+            for (let i = 0; i < snake.length; i++) {
+                // 頭是強調色，身體是灰色
+                ctx.fillStyle = (i == 0) ? "#58a6ff" : "#8b949e";
+                ctx.fillRect(snake[i].x, snake[i].y, box, box);
+                
+                // 每個格子給個邊框，看起來比較像像素風
+                ctx.strokeStyle = "#0d1117";
+                ctx.strokeRect(snake[i].x, snake[i].y, box, box);
             }
         }
-        
-        // 2. 導覽列自動隱藏 (Navbar Auto-hide)
-        let lastScrollTop = 0;
-        const navbar = document.getElementById('navbar');
 
-        window.addEventListener('scroll', function() {
-            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                // 向下滾動，且距離頂部超過 100px 時 -> 隱藏
-                navbar.classList.add('nav-hidden');
-            } else {
-                // 向上滾動 -> 顯示
-                navbar.classList.remove('nav-hidden');
+        function drawFood() {
+            ctx.fillStyle = "#ff7b72"; // 紅色蘋果
+            ctx.fillRect(food.x, food.y, box, box);
+        }
+
+        function collision(head, array) {
+            for (let i = 0; i < array.length; i++) {
+                if (head.x == array[i].x && head.y == array[i].y) {
+                    return true;
+                }
             }
-            lastScrollTop = scrollTop;
-        });
+            return false;
+        }
 
-        // 頁面載入時觸發一次
-        reveal();
+        // --- 遊戲控制 ---
+        function startGame() {
+            if (game) clearInterval(game);
+            init();
+            overlay.style.display = 'none';
+            d = "RIGHT"; // 預設向右跑
+            game = setInterval(draw, gameSpeed);
+        }
+
+        function gameOver() {
+            clearInterval(game);
+            isGameOver = true;
+            // 儲存最高分 (雙重保險)
+            if (score > localStorage.getItem('snakeHighScore')) {
+                localStorage.setItem('snakeHighScore', score);
+            }
+            showOverlay('Game Over!', `Score: ${score}`, 'Try Again');
+        }
+
+        function togglePause() {
+            if (isGameOver || overlay.style.display === 'block' && !isPaused) return;
+            
+            isPaused = !isPaused;
+            if (isPaused) {
+                showOverlay('Paused', 'Press Space to Continue', 'Resume');
+                startBtn.setAttribute('onclick', 'togglePause()'); // 按鈕改為繼續
+            } else {
+                overlay.style.display = 'none';
+                startBtn.setAttribute('onclick', 'startGame()'); // 恢復按鈕功能
+            }
+        }
+
+        function showOverlay(title, msg, btnText) {
+            overlayTitle.innerText = title;
+            overlayMsg.innerText = msg;
+            startBtn.innerText = btnText;
+            overlay.style.display = 'block';
+        }
+
+        // 頁面載入時
+        init();
+
     </script>
 </body>
 </html>
