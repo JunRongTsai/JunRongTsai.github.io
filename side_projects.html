@@ -275,10 +275,10 @@
             // 實際上線時，直接用 frame.src = url; 即可
             
             // 模擬載入 (實際請把這行改成 frame.src = url;)
-            // frame.src = url; 
+             frame.src = url; 
             
             // 暫時顯示一個說明畫面，方便你測試 layout
-            frame.srcdoc = `
+            /*frame.srcdoc = `
                 <body style="background-color:#000; color:#58a6ff; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; margin:0; font-family:sans-serif;">
                     <h2 style="margin-bottom:10px;">正在載入 ${title}...</h2>
                     <p style="color:#8b949e;">( 這是子框架區域 iframe )</p>
@@ -286,7 +286,7 @@
                     <div style="margin-top:20px; width:40px; height:40px; border:3px solid #333; border-top:3px solid #58a6ff; border-radius:50%; animation:spin 1s linear infinite;"></div>
                     <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
                 </body>
-            `;
+            `;*/
 
             // 4. 自動捲動到遊戲區
             viewer.scrollIntoView({ behavior: 'smooth', block: 'center' });

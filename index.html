@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- SEO 優化 -->
-    <meta name="description" content="蔡俊榮 (Rowan Tsai) 的個人履歷，專注於 CIM、MES 系統開發與後端技術。">
-    <meta property="og:title" content="蔡俊榮 (Rowan) | CIM 電腦整合製造工程師">
-    <meta property="og:description" content="專注於 MES 系統開發、PLC 設備通訊與自動化流程設計。">
+    <meta name="description" content="蔡俊榮 (Rowan Tsai) 的個人履歷，資深後端工程師，擅長 C#、Java、Python 系統開發與架構設計。">
+    <meta property="og:title" content="蔡俊榮 (Rowan) | 後端軟體工程師">
+    <meta property="og:description" content="專注於高效率後端系統開發、自動化流程設計與資料庫優化。">
     <meta property="og:image" content="images/profile.jpg">
     
-    <title>蔡俊榮 (Rowan) | CIM 電腦整合製造工程師</title>
+    <title>蔡俊榮 (Rowan) | 後端軟體工程師</title>
     
     <!-- 引入 FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,10 +31,8 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* [新增] 平滑滾動設定：讓所有錨點跳轉變成滑動效果 */
-        html {
-            scroll-behavior: smooth;
-        }
+        /* 平滑滾動 */
+        html { scroll-behavior: smooth; }
 
         body {
             background-color: var(--bg-color);
@@ -46,11 +44,15 @@
             overflow-x: hidden;
         }
 
+        /* [優化] 滾動動畫樣式 */
         .reveal {
-            opacity: 0; transform: translateY(50px); transition: all 0.8s ease-out;
+            opacity: 0; 
+            transform: translateY(50px) scale(0.95); 
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1); 
         }
         .reveal.active {
-            opacity: 1; transform: translateY(0);
+            opacity: 1; 
+            transform: translateY(0) scale(1);
         }
 
         a { text-decoration: none; transition: 0.2s; }
@@ -274,7 +276,6 @@
         .social-links a { font-size: 1.5rem; color: var(--text-muted); margin: 0 15px; }
         .social-links a:hover { color: var(--accent); }
 
-        /* 回到頂部按鈕 */
         #back-to-top {
             position: fixed; bottom: 30px; right: 30px;
             background: var(--accent); color: #0d1117;
@@ -290,14 +291,13 @@
             .hero { flex-direction: column-reverse; text-align: center; padding-top: 6rem; justify-content: center; }
             .hero h1 { font-size: 2.5rem; }
             
-            /* 漢堡選單邏輯 */
             .hamburger { display: block; }
             .nav-links {
                 position: absolute; top: 60px; right: 0;
                 background: rgba(13, 17, 23, 0.95);
                 width: 100%; flex-direction: column; gap: 0;
                 border-bottom: 1px solid var(--border);
-                display: none; /* 預設隱藏 */
+                display: none; 
             }
             .nav-links.active { display: flex; animation: slideDown 0.3s ease; }
             .nav-links a { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); width: 100%; display: block; }
@@ -325,7 +325,6 @@
     <nav id="navbar">
         <div class="nav-logo">Rowan<span>.Dev</span></div>
         
-        <!-- 漢堡選單按鈕 (手機版顯示) -->
         <div class="hamburger" onclick="toggleMenu()">
             <i class="fa-solid fa-bars"></i>
         </div>
@@ -336,14 +335,13 @@
             <a href="#projects" onclick="toggleMenu()">專案</a>
             <a href="#skills" onclick="toggleMenu()">技能</a>
             
-            <!-- 休憩區開關 -->
             <a href="side_projects.html" class="fun-zone-link"><i class="fa-solid fa-gamepad"></i> 休憩區</a>
         </div>
     </nav>
 
-    <!-- 1. 首頁 Hero -->
+    <!-- 1. 首頁 Hero (active class 確保秒開) -->
     <section class="hero" id="about">
-        <div class="hero-content reveal">
+        <div class="hero-content reveal active">
             <span class="hero-greeting">Hi, I am</span>
             <h1>蔡俊榮 (Rowan)</h1>
             
@@ -352,9 +350,11 @@
                 <span class="typewriter" id="typewriter-text"></span><span class="cursor">&nbsp;</span>
             </div>
 
+            <!-- [文案優化] 強調廣義後端、系統架構與自動化 -->
             <p>
-                擅長將工廠的「噪音」轉化為「數據」。<br>
-                致力於用程式碼解決產線痛點，打造穩定高效的製造系統。
+                熱衷於解決複雜的後端難題，專注於建構高效率、高可用的系統架構。<br>
+                擁有紮實的 C#、Java 與 Python 開發經驗，從自動化工具到企業級應用皆能得心應手。<br>
+                我不只寫程式，更致力於用技術為企業創造價值。
             </p>
             <div class="cta-group">
                 <a href="mailto:markben841027@gmail.com" class="cta-button">
@@ -363,7 +363,7 @@
             </div>
         </div>
 
-        <div class="profile-container reveal">
+        <div class="profile-container reveal active">
             <div class="profile-wrapper">
                 <img src="images/profile.jpg" alt="Rowan Tsai" class="profile-img">
             </div>
@@ -385,15 +385,15 @@
                 <div class="job-content">
                     <div class="job-header">
                         <div>
-                            <div class="job-title">CIM 工程師</div>
+                            <div class="job-title">CIM 工程師 (後端開發與系統整合)</div>
                             <div class="job-company">華新科技 (Walsin Technology)</div>
                         </div>
                         <span class="job-period">2025/10 - 現今</span>
                     </div>
                     <ul class="job-details">
-                        <li>負責 MES (製造執行系統) 功能開發與維護，確保產線資訊流穩定。</li>
-                        <li>整合生產設備數據 (IoT)，優化製程參數收集流程。</li>
-                        <li>開發自動化工具，提升工廠營運效率。</li>
+                        <li>負責後端系統 (MES) 功能開發與維護，確保產線資訊流高可用性。</li>
+                        <li>整合 IoT 設備數據，優化製程參數收集與即時監控流程。</li>
+                        <li>開發自動化工具提升營運效率，解決現場痛點。</li>
                     </ul>
                 </div>
             </div>
@@ -407,15 +407,15 @@
                 <div class="job-content">
                     <div class="job-header">
                         <div>
-                            <div class="job-title">MES 工程師</div>
+                            <div class="job-title">MES 工程師 (C# 後端開發)</div>
                             <div class="job-company">先進光電 (AOET)</div>
                         </div>
                         <span class="job-period">2023/06 - 2025/09</span>
                     </div>
                     <ul class="job-details">
-                        <li><b>MES 系統客製化</b>：使用 C# 設計操作介面與控制邏輯。</li>
+                        <li><b>系統客製化</b>：使用 C# 設計後端邏輯與操作介面，優化作業流程。</li>
                         <li><b>自動化排程</b>：利用 WinForms 與批次腳本建立報表自動寄送機制。</li>
-                        <li><b>流程自動化 (RPA)</b>：維護 UiPath 流程，減少人工操作。</li>
+                        <li><b>流程自動化 (RPA)</b>：維護 UiPath 流程，大幅減少人工重複操作。</li>
                         <li><b>資料處理</b>：撰寫 Python 爬蟲與 Excel VBA，提升資料整合效率。</li>
                     </ul>
                 </div>
@@ -430,15 +430,15 @@
                 <div class="job-content">
                     <div class="job-header">
                         <div>
-                            <div class="job-title">軟體工程師</div>
+                            <div class="job-title">軟體工程師 (Java Web 開發)</div>
                             <div class="job-company">鼎新數智 (Digiwin)</div>
                         </div>
                         <span class="job-period">2019/10 - 2023/06</span>
                     </div>
                     <ul class="job-details">
-                        <li><b>報表平台開發</b>：使用 FineReport 整合 Oracle DB。</li>
-                        <li><b>Web 全端開發</b>：使用 Java Web, HTML, TypeScript 維護系統。</li>
-                        <li><b>系統整合</b>：協助 ETL 資料交換與 DevOps (Jenkins/SVN) 管理。</li>
+                        <li><b>Web 全端開發</b>：使用 Java Web, HTML, TypeScript 維護企業級系統。</li>
+                        <li><b>資料視覺化</b>：使用 FineReport 整合 Oracle DB 開發商業報表。</li>
+                        <li><b>系統整合</b>：協助 ETL 資料交換與 DevOps (Jenkins/SVN) 版控管理。</li>
                     </ul>
                 </div>
             </div>
@@ -454,9 +454,9 @@
                 <div class="project-top">
                     <div class="folder-icon"><i class="fa-regular fa-folder"></i></div>
                 </div>
-                <h3>PLC 即時監控系統</h3>
+                <h3>即時監控系統開發</h3>
                 <div class="project-desc">
-                    透過 Modbus/TCP 協定與 Panasonic 及 Omron PLC 通訊。實現每 5 秒自動輪詢 (Polling) 機台數據，即時掌握產線設備狀態與異常警報。
+                    透過 Modbus/TCP 協定與硬體設備通訊。實現高頻率自動輪詢 (Polling) 機制，即時掌握設備狀態與異常警報，確保系統穩定運行。
                 </div>
                 <div class="tech-tags">
                     <span>C#</span><span>Modbus</span><span>WinForms</span><span>Multi-threading</span>
@@ -469,7 +469,7 @@
                 </div>
                 <h3>AutoBackup 自動化工具</h3>
                 <div class="project-desc">
-                    開發 Windows Service 工具，自動偵測關鍵資料夾變動並進行壓縮備份。包含完整 Log 記錄與排程設定，大幅降低人工備份成本。
+                    開發 Windows Service 工具，自動偵測關鍵資料夾變動並進行壓縮備份。包含完整 Log 記錄與排程設定，大幅降低人工備份的時間成本。
                 </div>
                 <div class="tech-tags">
                     <span>C#</span><span>IO Stream</span><span>Automation</span>
@@ -480,9 +480,9 @@
                 <div class="project-top">
                     <div class="folder-icon"><i class="fa-regular fa-folder"></i></div>
                 </div>
-                <h3>自動化郵件報表系統</h3>
+                <h3>自動化報表系統</h3>
                 <div class="project-desc">
-                    整合 WinForms 與 Python 腳本，每日自動產出機台良率與產能報表。將數據視覺化並自動寄送給部門主管。
+                    整合 WinForms 與 Python 腳本，每日自動抓取數據並產出視覺化報表。將繁瑣的資料整理工作自動化，並自動寄送給相關部門。
                 </div>
                 <div class="tech-tags">
                     <span>Python</span><span>VBA</span><span>SMTP</span><span>RPA</span>
@@ -539,8 +539,8 @@
 
     <!-- JS 腳本區 -->
     <script>
-        // 1. 打字機特效邏輯
-        const texts = ["CIM 電腦整合製造工程師", "MES 系統開發專家", "自動化流程設計師", "後端軟體工程師"];
+        // 1. 打字機特效 (更新為更通用的後端職稱)
+        const texts = ["後端軟體工程師", "系統架構設計師", "自動化流程專家", "C# / Java / Python 開發者"];
         let count = 0;
         let index = 0;
         let currentText = "";
@@ -558,68 +558,78 @@
             if (letter.length === currentText.length) {
                 count++;
                 index = 0;
-                setTimeout(type, 2000); // 停頓 2 秒
+                setTimeout(type, 2000); 
             } else {
-                setTimeout(type, 100); // 打字速度
+                setTimeout(type, 100); 
             }
         }());
 
-        // 2. 漢堡選單控制
+        // 2. 漢堡選單
         function toggleMenu() {
             const navLinks = document.getElementById('nav-links');
             navLinks.classList.toggle('active');
         }
 
-        // 3. 滾動特效 & 導覽列 & Back-to-Top
-        window.addEventListener('scroll', () => {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const navbar = document.getElementById('navbar');
-            const backToTop = document.getElementById('back-to-top');
+        // 3. 滾動特效 (含雙向淡入淡出)
+        window.addEventListener('scroll', reveal);
 
-            // 導覽列隱藏邏輯 (滾動時)
-            if (scrollTop > 100 && scrollTop > window.lastScrollTop) {
+        function reveal() {
+            var reveals = document.querySelectorAll('.reveal');
+
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementBottom = reveals[i].getBoundingClientRect().bottom;
+                var elementVisible = 150; 
+
+                // 核心邏輯：雙向淡入淡出
+                if (elementTop < windowHeight - elementVisible && elementBottom > elementVisible) {
+                    reveals[i].classList.add('active');
+                } else {
+                    reveals[i].classList.remove('active');
+                }
+            }
+        }
+        
+        // 4. 導覽列 & Back-to-Top
+        let lastScrollTop = 0;
+        const navbar = document.getElementById('navbar');
+        const backToTop = document.getElementById('back-to-top');
+
+        window.addEventListener('scroll', function() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // 導覽列自動隱藏
+            if (scrollTop > 100 && scrollTop > lastScrollTop) {
                 navbar.classList.add('nav-hidden');
             } else {
                 navbar.classList.remove('nav-hidden');
             }
-            window.lastScrollTop = scrollTop;
+            lastScrollTop = scrollTop;
 
-            // 顯示回到頂部按鈕
+            // 回到頂部按鈕
             if (scrollTop > 300) {
                 backToTop.style.display = "flex";
             } else {
                 backToTop.style.display = "none";
             }
-
-            // 滾動 Reveal 特效
-            const reveals = document.querySelectorAll('.reveal');
-            reveals.forEach(reveal => {
-                const windowHeight = window.innerHeight;
-                const elementTop = reveal.getBoundingClientRect().top;
-                const elementVisible = 150;
-                if (elementTop < windowHeight - elementVisible) {
-                    reveal.classList.add('active');
-                } else {
-                    reveal.classList.remove('active');
-                }
-            });
         });
 
-        // 4. 滑鼠頂部感應選單 (包含滑鼠移開自動收合)
+        // 5. 滑鼠頂部感應 (移開不收回)
         document.addEventListener('mousemove', (e) => {
-            const navbar = document.getElementById('navbar');
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            // 只有當頁面已經滾動下來時 (scrollTop > 100)，才需要自動隱藏/顯示的邏輯
-            // 如果在最頂端，選單本來就該顯示，不用管滑鼠在哪
-            if (scrollTop > 100) {
-                if (e.clientY < 50) {
-                    navbar.classList.remove('nav-hidden'); // 滑鼠移到頂部 -> 顯示
-                }// else if (e.clientY > 100) { 
-                //    navbar.classList.add('nav-hidden'); // 滑鼠移開 (超過100px) -> 隱藏
-                //}
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop < 50) {
+                navbar.classList.remove('nav-hidden');
+                return;
             }
+            if (e.clientY < 50) {
+                navbar.classList.remove('nav-hidden');
+            }
+            // 移除 else if (e.clientY > 100) 邏輯，讓選單不自動收回
         });
+
+        // 頁面載入時觸發一次 reveal
+        reveal();
     </script>
 </body>
 </html>
