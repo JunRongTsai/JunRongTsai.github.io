@@ -3,145 +3,301 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rowan (俊榮) | 後端工程師</title>
+    <title>JunRong Tsai (Rowan) | Software Engineer</title>
     <style>
-        /* --- CSS Style (樣式區) --- 
-           身為後端，我們通常討厭 CSS，所以這裡用了最簡單的 Flexbox 排版 
-           並預設為工程師最愛的 Dark Mode (深色模式)
-        */
+        /* --- 全域變數設定 (像後端的常數定義) --- */
         :root {
-            --bg-color: #1e1e1e;
-            --text-color: #e0e0e0;
-            --accent-color: #00adb5; /* 類似 VS Code 的亮藍色 */
-            --card-bg: #2d2d2d;
+            --bg-color: #0d1117;       /* GitHub 風格深灰底 */
+            --card-bg: #161b22;        /* 卡片背景 */
+            --text-main: #c9d1d9;      /* 主要文字 */
+            --text-muted: #8b949e;     /* 次要文字 */
+            --accent: #58a6ff;         /* 類似 VS Code 的藍色強調 */
+            --accent-glow: rgba(88, 166, 255, 0.15); /* 發光效果 */
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        }
+
+        /* --- 基礎設定 --- */
+        * {
+            box-sizing: border-box; /* 讓 padding 不會撐大寬度，排版必備 */
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
+            color: var(--text-main);
+            font-family: var(--font-main);
             line-height: 1.6;
+            overflow-x: hidden; /* 防止橫向捲軸出現 */
         }
 
-        header {
-            background-color: #252526;
-            padding: 2rem;
-            text-align: center;
-            border-bottom: 3px solid var(--accent-color);
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        ul { list-style: none; }
+
+        /* --- 導覽列 (玻璃擬態效果) --- */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(13, 17, 23, 0.8); /* 半透明 */
+            backdrop-filter: blur(10px);       /* 毛玻璃特效 */
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid #30363d;
         }
 
-        h1 { margin: 0; font-size: 2.5rem; color: var(--accent-color); }
-        h2 { border-bottom: 2px solid var(--accent-color); padding-bottom: 0.5rem; display: inline-block; }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+        
+        .nav-links { display: flex; gap: 2rem; }
+        .nav-links a:hover { color: var(--accent); }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
+        /* --- 通用區塊設定 --- */
+        section {
+            padding: 5rem 10%; /* 上下留白，讓畫面有呼吸感 */
+            min-height: 80vh;  /* 每個區塊至少佔畫面 80% 高度 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        .section {
-            margin-bottom: 3rem;
-            background-color: var(--card-bg);
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            border-left: 5px solid var(--accent);
+            padding-left: 1rem;
         }
 
-        /* 技能標籤樣式 */
-        .tech-tag {
+        /* --- Hero Section (首頁視覺) --- */
+        .hero {
+            height: 100vh;
+            text-align: left;
+            padding-top: 0;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .hero span { color: var(--accent); }
+        
+        .typewriter {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            min-height: 1.6em; /* 預留高度防止跳動 */
+        }
+
+        .cta-btn {
             display: inline-block;
-            background-color: #3e3e42;
-            padding: 5px 10px;
-            margin: 5px;
-            border-radius: 4px;
-            font-family: 'Courier New', Courier, monospace; /* 程式碼字體 */
-            color: #dcdcaa;
-            border: 1px solid #555;
-        }
-
-        .contact-btn {
-            display: inline-block;
-            background-color: var(--accent-color);
-            color: #1e1e1e;
-            padding: 10px 20px;
-            text-decoration: none;
+            margin-top: 2rem;
+            padding: 12px 30px;
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
             border-radius: 5px;
             font-weight: bold;
-            margin-top: 10px;
+        }
+        .cta-btn:hover {
+            background: var(--accent-glow);
+            box-shadow: 0 0 15px var(--accent-glow);
         }
 
+        /* --- Experience Cards (經歷區塊 - 類似 Grid 排版) --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 自動RWD排版魔法 */
+            gap: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #30363d;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px); /* 滑鼠移上去會浮起來 */
+            border-color: var(--accent);
+        }
+
+        .card h3 { color: var(--accent); margin-bottom: 0.5rem; }
+        .card .date { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; display: block; }
+
+        /* --- Skills (技能標籤) --- */
+        .skill-tag {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 5px;
+            background: #21262d;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            border: 1px solid #30363d;
+        }
+        .skill-tag:hover { border-color: var(--accent); color: var(--accent); }
+
+        /* --- Footer --- */
         footer {
             text-align: center;
-            padding: 1rem;
-            font-size: 0.8rem;
-            opacity: 0.7;
+            padding: 2rem;
+            border-top: 1px solid #30363d;
+            color: var(--text-muted);
+        }
+
+        /* --- RWD 手機版調整 (Media Query) --- */
+        /* 當螢幕寬度小於 768px (平板/手機) 時執行這裡的 CSS */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .nav-links { display: none; } /* 手機版暫時隱藏選單，保持極簡 */
+            section { padding: 3rem 5%; }
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Hello, I'm Rowan (俊榮)</h1>
-        <p>Software Engineer | Backend Specialist | Java & Python Survivor</p>
-    </header>
+    <nav>
+        <div class="logo">Rowan.Dev</div>
+        <div class="nav-links">
+            <a href="#about">About</a>
+            <a href="#experience">Experience</a>
+            <a href="#skills">Skills</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
 
-    <div class="container">
-        
-        <div class="section">
-            <h2>About Me (關於我)</h2>
+    <section class="hero">
+        <div>
+            <p style="color: var(--accent);">Hi, my name is</p>
+            <h1>JunRong Tsai.<br><span style="color: #8b949e;">I build things for the backend.</span></h1>
+            
+            <div class="typewriter" id="typing-text"></div>
+            
+            <a href="#experience" class="cta-btn">Check my work</a>
+        </div>
+    </section>
+
+    <section id="about">
+        <h2>01. About Me</h2>
+        <div style="max-width: 700px;">
             <p>
-                嗨！我是俊榮。一名熱愛解決問題的軟體工程師。
-                比起調整 Pixel 對齊，我更喜歡優化 Database Query 的速度。
-                目前專注於 Java Web 開發與後端架構。
+                Hello！我是俊榮 (Rowan)，一名熱衷於解決複雜問題的軟體工程師。
+                我的專長在於後端開發與系統架構設計，比起前端的像素對齊，我更享受於 Database 查詢優化與 API 的邏輯設計。
+            </p>
+            <br>
+            <p>
+                目前定居高雄，專注於 <strong>C# ASP.NET</strong> 開發。在此之前，我有豐富的 Java Web 與 Python 經驗。
+                我也熱衷於自動化工具的開發，曾為團隊開發過自動備份工具與 PLC 監控系統，致力於用程式碼提升工作效率。
             </p>
         </div>
+    </section>
 
-        <div class="section">
-            <h2>Tech Stack (技術堆疊)</h2>
-            <p>這裡列出我曾經「打過交道」的技術：</p>
-            <div>
-                <span class="tech-tag">Java (Spring Boot)</span>
-                <span class="tech-tag">C# (.NET)</span>
-                <span class="tech-tag">Python (Django/Flask)</span>
-                <span class="tech-tag">Oracle SQL</span>
-                <span class="tech-tag">Git</span>
+    <section id="experience">
+        <h2>02. Experience & Projects</h2>
+        <div class="grid-container">
+            <div class="card">
+                <h3>Backend Engineer</h3>
+                <span class="date">Oct 2025 - Present | Kaohsiung</span>
+                <p>專注於 C# ASP.NET 系統開發與維護。協助導入現代化開發流程，提升系統穩定性。</p>
             </div>
-            <p>正在努力點滿的技能樹：</p>
-            <div>
-                <span class="tech-tag">Redis</span>
-                <span class="tech-tag">Docker</span>
-                <span class="tech-tag">Jenkins</span>
+
+            <div class="card">
+                <h3>PLC Monitoring System</h3>
+                <span class="date">Side Project</span>
+                <p>開發針對 Panasonic (HONQCHI) 與 Omron (NIKKISO) PLC 的即時監控系統。透過 C# 實現每 5 秒自動輪詢與異常警報。</p>
+            </div>
+
+            <div class="card">
+                <h3>AutoBackup Tool</h3>
+                <span class="date">WinForms Tool</span>
+                <p>開發 "AutoBackupForYunHsu" 工具，自動化處理檔案備份與壓縮流程，大幅減少手動作業時間。</p>
+            </div>
+            
+            <div class="card">
+                <h3>Sim Racing Setup</h3>
+                <span class="date">Personal Interest</span>
+                <p>熱衷於模擬賽車硬體研究 (Logitech G923)，並嘗試結合程式控制與硬體回饋。</p>
             </div>
         </div>
+    </section>
 
-        <div class="section">
-            <h2>Works (專案經驗)</h2>
-            <ul>
-                <li>
-                    <strong>企業級 ERP 系統維護</strong> - <i>Java, Oracle</i><br>
-                    優化 SQL 查詢效能，將報表生成時間從 5 分鐘縮短至 30 秒。
-                </li>
-                <li>
-                    <strong>自動化資料爬蟲</strong> - <i>Python</i><br>
-                    撰寫腳本自動抓取競品資料，解放行銷部門的雙手。
-                </li>
-            </ul>
+    <section id="skills">
+        <h2>03. Tech Stack</h2>
+        <p style="margin-bottom: 1rem;">Here are a few technologies I've been working with recently:</p>
+        
+        <div style="margin-bottom: 2rem;">
+            <h4 style="color: var(--accent); margin-bottom: 10px;">Backend Core</h4>
+            <span class="skill-tag">C# / .NET</span>
+            <span class="skill-tag">Java Web</span>
+            <span class="skill-tag">Python (Django/Flask)</span>
         </div>
 
-        <div class="section" style="text-align: center;">
-            <h2>Contact (聯絡我)</h2>
-            <p>有有趣的後端難題嗎？歡迎找我聊聊！</p>
-            <a href="mailto:your-email@example.com" class="contact-btn">Send Email</a>
-            <br><br>
-            <a href="https://github.com/你的帳號" style="color: var(--accent-color);">GitHub Profile</a>
+        <div style="margin-bottom: 2rem;">
+            <h4 style="color: var(--accent); margin-bottom: 10px;">Database & Cache</h4>
+            <span class="skill-tag">Oracle SQL</span>
+            <span class="skill-tag">Redis</span>
+            <span class="skill-tag">NoSQL</span>
         </div>
 
-    </div>
+        <div>
+            <h4 style="color: var(--accent); margin-bottom: 10px;">DevOps & Tools</h4>
+            <span class="skill-tag">Git / GitHub</span>
+            <span class="skill-tag">Docker</span>
+            <span class="skill-tag">Jenkins</span>
+            <span class="skill-tag">Linux</span>
+        </div>
+    </section>
+
+    <section id="contact" style="text-align: center;">
+        <h2>04. What's Next?</h2>
+        <h1 style="font-size: 3rem; margin-bottom: 1rem;">Get In Touch</h1>
+        <p style="max-width: 600px; margin: 0 auto 2rem auto;">
+            我目前對於新的技術挑戰持開放態度。無論是關於 C# 架構的討論，或是想聊聊模擬賽車的設置，都歡迎隨時聯絡我！
+        </p>
+        <a href="mailto:markben841027@gmail.com" class="cta-btn" style="font-size: 1.2rem;">Say Hello</a>
+        
+        <div style="margin-top: 3rem;">
+            <a href="https://github.com/JunRongTsai" target="_blank" style="margin: 0 10px; font-size: 1.5rem;">GitHub</a>
+            <a href="https://www.cake.me/s--8VT7YkOQjDiW9T1pojUQgg--/jun-rong-tsai-3c69ee" target="_blank" style="margin: 0 10px; font-size: 1.5rem;">CakeResume</a>
+        </div>
+    </section>
 
     <footer>
-        <p>&copy; 2025 Rowan. Built with &hearts; and zero CSS skills.</p>
+        <p>Designed & Built by Rowan (JunRong) Tsai</p>
+        <p style="font-size: 0.8rem; margin-top: 5px;">&copy; 2025 All rights reserved.</p>
     </footer>
 
+    <script>
+        // --- 邏輯：打字機特效 ---
+        const textToType = "I engineer robust solutions for the web.";
+        const typeElement = document.getElementById('typing-text');
+        let charIndex = 0;
+
+        function typeWriter() {
+            if (charIndex < textToType.length) {
+                typeElement.innerHTML += textToType.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeWriter, 100); // 打字速度 (毫秒)
+            }
+        }
+
+        // 當網頁載入完成後開始打字
+        window.onload = typeWriter;
+
+        // --- 邏輯：平滑捲動 (針對 Safari 等舊版瀏覽器支援) ---
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
 </body>
 </html>
