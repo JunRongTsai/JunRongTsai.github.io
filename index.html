@@ -36,7 +36,7 @@
         /* 滾動動畫核心樣式：預設隱藏並下移 */
         .reveal {
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(50px); /* 增加位移距離，讓動畫更明顯 */
             transition: all 0.8s ease-out;
         }
 
@@ -53,7 +53,7 @@
             position: fixed;
             top: 0;
             width: 100%;
-            background: rgba(13, 17, 23, 0.85);
+            background: rgba(13, 17, 23, 0.9); /* 稍微加深透明度 */
             backdrop-filter: blur(12px);
             border-bottom: 1px solid rgba(255,255,255,0.1);
             padding: 1rem 5%;
@@ -61,7 +61,12 @@
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
-            transition: top 0.3s;
+            transition: transform 0.3s ease-in-out; /* 增加滑動隱藏的過渡效果 */
+        }
+        
+        /* 導覽列隱藏狀態 */
+        nav.nav-hidden {
+            transform: translateY(-100%);
         }
 
         .nav-logo { font-size: 1.3rem; font-weight: 800; color: var(--text-main); letter-spacing: 1px; }
@@ -113,7 +118,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 60px;
-            padding-top: 0; /* 讓它完全置中 */
+            padding-top: 0;
         }
 
         .hero-content { flex: 1; }
@@ -135,7 +140,7 @@
             border: none; margin: 0 0 1.5rem 0;
             display: block;
         }
-        .hero h2::before, .hero h2::after { content: none; } /* 移除通用 h2 樣式 */
+        .hero h2::before, .hero h2::after { content: none; }
 
         .hero p {
             font-size: 1.1rem;
@@ -163,40 +168,57 @@
         }
         .cta-button:hover::before { width: 100%; }
 
-        /* Profile Image */
+        /* Profile Image (修改版：穩重科技風) */
         .profile-container {
             position: relative;
             width: 300px; height: 300px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
+        
+        /* 移除旋轉動畫，改為靜態層次感 */
         .profile-wrapper {
+            position: relative;
             width: 100%; height: 100%;
             border-radius: 50%;
-            padding: 5px;
-            background: linear-gradient(45deg, var(--accent), transparent);
-            animation: spinBorder 10s linear infinite;
+            z-index: 2;
         }
+
         .profile-img {
             width: 100%; height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            border: 4px solid var(--bg-color);
-            position: relative;
-            z-index: 2;
+            /* 改用雙層邊框質感：內圈 accent，外圈深色隔開 */
+            border: 4px solid var(--bg-color); 
+            box-shadow: 0 0 0 4px var(--accent), 0 0 40px rgba(88, 166, 255, 0.4);
+            transition: all 0.5s ease;
         }
-        /* 裝飾性背景圓 */
+
+        /* 懸浮時的微互動：呼吸燈效果 */
+        .profile-container:hover .profile-img {
+            transform: scale(1.03); /* 輕微放大 */
+            box-shadow: 0 0 0 4px var(--accent), 0 0 60px rgba(88, 166, 255, 0.7);
+        }
+
+        /* 裝飾性背景圓環 (靜態科技感) */
         .profile-container::after {
             content: ""; position: absolute;
-            top: 20px; left: 20px; right: -20px; bottom: -20px;
-            border: 2px solid var(--border);
+            top: -15px; left: -15px; right: -15px; bottom: -15px;
+            border: 1px solid var(--border);
             border-radius: 50%;
             z-index: 0;
+            opacity: 0.6;
+            transition: all 0.5s ease;
+        }
+        
+        .profile-container:hover::after {
+            border-color: var(--accent);
+            opacity: 0.3;
+            transform: scale(1.1);
         }
 
-        @keyframes spinBorder {
-            100% { transform: rotate(360deg); }
-        }
-
-        /* --- 6. 職涯經歷 (Timeline 改良版) --- */
+        /* --- 6. 職涯經歷 --- */
         .timeline {
             position: relative;
             max-width: 900px;
@@ -206,7 +228,7 @@
         .timeline::before {
             content: '';
             position: absolute;
-            left: 80px; /* Logo 寬度預留 */
+            left: 80px; 
             top: 0; bottom: 0;
             width: 2px;
             background: var(--border);
@@ -215,14 +237,14 @@
         .job-card {
             position: relative;
             margin-bottom: 3.5rem;
-            padding-left: 120px; /* 給 Logo 和線的空間 */
+            padding-left: 120px; 
         }
 
         /* 時間軸上的點 */
         .job-card::after {
             content: '';
             position: absolute;
-            left: 76px; /* 對齊中間線 */
+            left: 76px; 
             top: 25px;
             width: 10px; height: 10px;
             background: var(--bg-color);
@@ -233,7 +255,6 @@
         }
         .job-card:hover::after { background: var(--accent); }
 
-        /* 公司 Logo 樣式 */
         .company-logo {
             position: absolute;
             left: 0; top: 5px;
@@ -251,7 +272,6 @@
             width: 90%; height: auto;
             object-fit: contain;
         }
-        /* 預設 Logo 文字 (如果沒圖的話) */
         .logo-placeholder {
             font-weight: bold; color: #333; font-size: 0.8rem; text-align: center;
         }
@@ -364,12 +384,12 @@
             .hero h1 { font-size: 2.8rem; }
             .nav-links { display: none; }
             section { padding: 5rem 6%; }
-            .timeline::before { left: 20px; } /* 線移到左邊 */
-            .job-card { padding-left: 50px; } /* 內容靠左 */
-            .job-card::after { left: 16px; } /* 點移到左邊 */
+            .timeline::before { left: 20px; }
+            .job-card { padding-left: 50px; }
+            .job-card::after { left: 16px; }
             .company-logo { 
                 position: relative; width: 50px; height: 50px; margin-bottom: 10px; 
-                left: auto; top: auto; /* 手機版 Logo 放到卡片裡面或上面，不掛在線旁 */
+                left: auto; top: auto; 
             }
             .job-header { flex-direction: column; }
         }
@@ -422,9 +442,7 @@
             
             <!-- Job 1: 華新科技 -->
             <div class="job-card reveal">
-                <!-- Logo 區塊：請將圖片存為 images/walsin.png -->
                 <div class="company-logo">
-                    <!-- 如果有圖片，請使用 img 標籤；若無，顯示文字 -->
                     <img src="images/walsin.png" alt="Walsin Technology" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                     <div class="logo-placeholder" style="display:none;">Walsin</div>
                 </div>
@@ -434,7 +452,7 @@
                             <div class="job-title">CIM 工程師</div>
                             <div class="job-company">華新科技 (Walsin Technology)</div>
                         </div>
-                        <span class="job-period">2025/10 - 現今</span> <!-- 修正時間以接續 AOET -->
+                        <span class="job-period">2025/10 - 現今</span>
                     </div>
                     <ul class="job-details">
                         <li>負責 MES (製造執行系統) 功能開發與維護，確保產線資訊流穩定。</li>
@@ -613,9 +631,9 @@
         <p style="font-size: 0.8rem; margin-top: 10px;">&copy; 2025 All rights reserved.</p>
     </footer>
 
-    <!-- JS: 滾動特效腳本 -->
+    <!-- JS: 滾動特效 & 導覽列互動腳本 -->
     <script>
-        // 當頁面滾動時觸發
+        // 1. 滾動特效 (Reveal on Scroll)
         window.addEventListener('scroll', reveal);
 
         function reveal() {
@@ -624,18 +642,36 @@
             for (var i = 0; i < reveals.length; i++) {
                 var windowheight = window.innerHeight;
                 var revealtop = reveals[i].getBoundingClientRect().top;
-                var revealpoint = 150; // 觸發點：元素進入視窗底部往上 150px 時
+                var revealpoint = 150; // 觸發點
 
                 if (revealtop < windowheight - revealpoint) {
                     reveals[i].classList.add('active');
                 } else {
-                    // 如果希望滾回去會消失，把下面這行取消註解
-                    // reveals[i].classList.remove('active');
+                    // 這裡就是你要的「回退」功能：當元素離開視窗範圍時，移除 active class
+                    // 這樣下次滑回來時，會再次觸發動畫
+                    reveals[i].classList.remove('active');
                 }
             }
         }
         
-        // 頁面載入時先觸發一次，避免首屏內容不顯示
+        // 2. 導覽列自動隱藏 (Navbar Auto-hide)
+        let lastScrollTop = 0;
+        const navbar = document.getElementById('navbar');
+
+        window.addEventListener('scroll', function() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // 向下滾動，且距離頂部超過 100px 時 -> 隱藏
+                navbar.classList.add('nav-hidden');
+            } else {
+                // 向上滾動 -> 顯示
+                navbar.classList.remove('nav-hidden');
+            }
+            lastScrollTop = scrollTop;
+        });
+
+        // 頁面載入時觸發一次
         reveal();
     </script>
 </body>
