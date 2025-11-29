@@ -1,1 +1,147 @@
-"<h1>Hello World, I am JunRong!</h1>" 
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rowan (俊榮) | 後端工程師</title>
+    <style>
+        /* --- CSS Style (樣式區) --- 
+           身為後端，我們通常討厭 CSS，所以這裡用了最簡單的 Flexbox 排版 
+           並預設為工程師最愛的 Dark Mode (深色模式)
+        */
+        :root {
+            --bg-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #00adb5; /* 類似 VS Code 的亮藍色 */
+            --card-bg: #2d2d2d;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: #252526;
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 3px solid var(--accent-color);
+        }
+
+        h1 { margin: 0; font-size: 2.5rem; color: var(--accent-color); }
+        h2 { border-bottom: 2px solid var(--accent-color); padding-bottom: 0.5rem; display: inline-block; }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        /* 技能標籤樣式 */
+        .tech-tag {
+            display: inline-block;
+            background-color: #3e3e42;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace; /* 程式碼字體 */
+            color: #dcdcaa;
+            border: 1px solid #555;
+        }
+
+        .contact-btn {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: #1e1e1e;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Hello, I'm Rowan (俊榮)</h1>
+        <p>Software Engineer | Backend Specialist | Java & Python Survivor</p>
+    </header>
+
+    <div class="container">
+        
+        <div class="section">
+            <h2>About Me (關於我)</h2>
+            <p>
+                嗨！我是俊榮。一名熱愛解決問題的軟體工程師。
+                比起調整 Pixel 對齊，我更喜歡優化 Database Query 的速度。
+                目前專注於 Java Web 開發與後端架構。
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>Tech Stack (技術堆疊)</h2>
+            <p>這裡列出我曾經「打過交道」的技術：</p>
+            <div>
+                <span class="tech-tag">Java (Spring Boot)</span>
+                <span class="tech-tag">C# (.NET)</span>
+                <span class="tech-tag">Python (Django/Flask)</span>
+                <span class="tech-tag">Oracle SQL</span>
+                <span class="tech-tag">Git</span>
+            </div>
+            <p>正在努力點滿的技能樹：</p>
+            <div>
+                <span class="tech-tag">Redis</span>
+                <span class="tech-tag">Docker</span>
+                <span class="tech-tag">Jenkins</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Works (專案經驗)</h2>
+            <ul>
+                <li>
+                    <strong>企業級 ERP 系統維護</strong> - <i>Java, Oracle</i><br>
+                    優化 SQL 查詢效能，將報表生成時間從 5 分鐘縮短至 30 秒。
+                </li>
+                <li>
+                    <strong>自動化資料爬蟲</strong> - <i>Python</i><br>
+                    撰寫腳本自動抓取競品資料，解放行銷部門的雙手。
+                </li>
+            </ul>
+        </div>
+
+        <div class="section" style="text-align: center;">
+            <h2>Contact (聯絡我)</h2>
+            <p>有有趣的後端難題嗎？歡迎找我聊聊！</p>
+            <a href="mailto:your-email@example.com" class="contact-btn">Send Email</a>
+            <br><br>
+            <a href="https://github.com/你的帳號" style="color: var(--accent-color);">GitHub Profile</a>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Rowan. Built with &hearts; and zero CSS skills.</p>
+    </footer>
+
+</body>
+</html>
