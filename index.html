@@ -3,301 +3,640 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JunRong Tsai (Rowan) | Software Engineer</title>
+    <title>蔡俊榮 (Rowan) | CIM 電腦整合製造工程師</title>
+    <!-- 引入 FontAwesome 圖標庫 (用於裝飾) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* --- 全域變數設定 (像後端的常數定義) --- */
+        /* --- 1. CSS 變數系統 --- */
         :root {
-            --bg-color: #0d1117;       /* GitHub 風格深灰底 */
-            --card-bg: #161b22;        /* 卡片背景 */
-            --text-main: #c9d1d9;      /* 主要文字 */
-            --text-muted: #8b949e;     /* 次要文字 */
-            --accent: #58a6ff;         /* 類似 VS Code 的藍色強調 */
-            --accent-glow: rgba(88, 166, 255, 0.15); /* 發光效果 */
-            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            --bg-color: #0d1117;       /* 深灰底色 */
+            --bg-gradient: radial-gradient(circle at top right, #1f293a 0%, #0d1117 40%);
+            --card-bg: rgba(22, 27, 34, 0.8); /* 半透明卡片背景 */
+            --text-main: #f0f6fc;      
+            --text-muted: #8b949e;     
+            --accent: #58a6ff;         /* 亮藍色 */
+            --accent-glow: rgba(88, 166, 255, 0.3);
+            --border: #30363d;         
+            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Helvetica, Arial, sans-serif;
         }
 
-        /* --- 基礎設定 --- */
-        * {
-            box-sizing: border-box; /* 讓 padding 不會撐大寬度，排版必備 */
-            margin: 0;
-            padding: 0;
-        }
+        /* --- 2. 基礎設定 & 動畫 --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             background-color: var(--bg-color);
+            background-image: var(--bg-gradient);
+            background-attachment: fixed; /* 背景固定，製造視差感 */
             color: var(--text-main);
-            font-family: var(--font-main);
-            line-height: 1.6;
-            overflow-x: hidden; /* 防止橫向捲軸出現 */
+            font-family: var(--font-stack);
+            line-height: 1.7;
+            overflow-x: hidden;
         }
 
-        a { text-decoration: none; color: inherit; transition: 0.3s; }
-        ul { list-style: none; }
+        /* 滾動動畫核心樣式：預設隱藏並下移 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
 
-        /* --- 導覽列 (玻璃擬態效果) --- */
+        /* 當元素加上 .active class 後，恢復原狀 */
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        a { text-decoration: none; transition: 0.2s; }
+
+        /* --- 3. 導覽列 --- */
         nav {
             position: fixed;
             top: 0;
             width: 100%;
-            background: rgba(13, 17, 23, 0.8); /* 半透明 */
-            backdrop-filter: blur(10px);       /* 毛玻璃特效 */
+            background: rgba(13, 17, 23, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             padding: 1rem 5%;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
-            border-bottom: 1px solid #30363d;
+            transition: top 0.3s;
         }
 
-        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+        .nav-logo { font-size: 1.3rem; font-weight: 800; color: var(--text-main); letter-spacing: 1px; }
+        .nav-logo span { color: var(--accent); }
         
-        .nav-links { display: flex; gap: 2rem; }
+        .nav-links { display: flex; gap: 25px; }
+        .nav-links a { color: var(--text-muted); font-size: 0.95rem; font-weight: 500; position: relative; }
         .nav-links a:hover { color: var(--accent); }
+        /* 導覽列連結下劃線動畫 */
+        .nav-links a::after {
+            content: ''; position: absolute; width: 0; height: 2px;
+            bottom: -5px; left: 0; background-color: var(--accent);
+            transition: width 0.3s;
+        }
+        .nav-links a:hover::after { width: 100%; }
 
-        /* --- 通用區塊設定 --- */
+        /* --- 4. 區塊通用 --- */
         section {
-            padding: 5rem 10%; /* 上下留白，讓畫面有呼吸感 */
-            min-height: 80vh;  /* 每個區塊至少佔畫面 80% 高度 */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            padding: 7rem 10%;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         h2 {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
-            border-left: 5px solid var(--accent);
-            padding-left: 1rem;
+            font-size: 2.2rem;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            color: var(--text-main);
+            position: relative;
+        }
+        h2::before {
+            content: attr(data-index);
+            color: var(--accent);
+            font-family: monospace;
+            font-size: 1.5rem;
+            margin-right: 15px;
+        }
+        h2::after {
+            content: ""; display: block; width: 200px; height: 1px;
+            background: linear-gradient(90deg, var(--border), transparent);
+            margin-left: 20px;
         }
 
-        /* --- Hero Section (首頁視覺) --- */
+        /* --- 5. Hero 首頁 --- */
         .hero {
-            height: 100vh;
-            text-align: left;
-            padding-top: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 60px;
+            padding-top: 0; /* 讓它完全置中 */
+        }
+
+        .hero-content { flex: 1; }
+        
+        .hero-greeting { 
+            color: var(--accent); font-family: monospace; font-size: 1.1rem; 
+            margin-bottom: 1rem; display: block;
         }
 
         .hero h1 {
             font-size: 4rem;
-            line-height: 1.2;
-            margin-bottom: 1rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            font-weight: 800;
         }
-
-        .hero span { color: var(--accent); }
         
-        .typewriter {
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 1.5rem;
+        .hero h2 {
+            font-size: 2rem; color: var(--text-muted); 
+            border: none; margin: 0 0 1.5rem 0;
+            display: block;
+        }
+        .hero h2::before, .hero h2::after { content: none; } /* 移除通用 h2 樣式 */
+
+        .hero p {
+            font-size: 1.1rem;
             color: var(--text-muted);
-            min-height: 1.6em; /* 預留高度防止跳動 */
+            max-width: 600px;
+            margin-bottom: 2.5rem;
+            line-height: 1.8;
         }
 
-        .cta-btn {
-            display: inline-block;
-            margin-top: 2rem;
-            padding: 12px 30px;
-            background: transparent;
-            border: 2px solid var(--accent);
-            color: var(--accent);
+        .cta-group { display: flex; gap: 15px; }
+
+        .cta-button {
+            padding: 14px 32px;
+            border: 1px solid var(--accent);
             border-radius: 5px;
-            font-weight: bold;
+            color: var(--accent);
+            font-weight: 600;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
-        .cta-btn:hover {
-            background: var(--accent-glow);
-            box-shadow: 0 0 15px var(--accent-glow);
+        .cta-button::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 0; height: 100%;
+            background: var(--accent-glow); transition: width 0.3s; z-index: -1;
+        }
+        .cta-button:hover::before { width: 100%; }
+
+        /* Profile Image */
+        .profile-container {
+            position: relative;
+            width: 300px; height: 300px;
+        }
+        .profile-wrapper {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            padding: 5px;
+            background: linear-gradient(45deg, var(--accent), transparent);
+            animation: spinBorder 10s linear infinite;
+        }
+        .profile-img {
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--bg-color);
+            position: relative;
+            z-index: 2;
+        }
+        /* 裝飾性背景圓 */
+        .profile-container::after {
+            content: ""; position: absolute;
+            top: 20px; left: 20px; right: -20px; bottom: -20px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            z-index: 0;
         }
 
-        /* --- Experience Cards (經歷區塊 - 類似 Grid 排版) --- */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 自動RWD排版魔法 */
-            gap: 2rem;
+        @keyframes spinBorder {
+            100% { transform: rotate(360deg); }
         }
 
-        .card {
+        /* --- 6. 職涯經歷 (Timeline 改良版) --- */
+        .timeline {
+            position: relative;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        /* 中間的線 */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 80px; /* Logo 寬度預留 */
+            top: 0; bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .job-card {
+            position: relative;
+            margin-bottom: 3.5rem;
+            padding-left: 120px; /* 給 Logo 和線的空間 */
+        }
+
+        /* 時間軸上的點 */
+        .job-card::after {
+            content: '';
+            position: absolute;
+            left: 76px; /* 對齊中間線 */
+            top: 25px;
+            width: 10px; height: 10px;
+            background: var(--bg-color);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            z-index: 2;
+            transition: background 0.3s;
+        }
+        .job-card:hover::after { background: var(--accent); }
+
+        /* 公司 Logo 樣式 */
+        .company-logo {
+            position: absolute;
+            left: 0; top: 5px;
+            width: 60px; height: 60px;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 2px solid var(--border);
+        }
+        .company-logo img {
+            width: 90%; height: auto;
+            object-fit: contain;
+        }
+        /* 預設 Logo 文字 (如果沒圖的話) */
+        .logo-placeholder {
+            font-weight: bold; color: #333; font-size: 0.8rem; text-align: center;
+        }
+
+        .job-content {
             background: var(--card-bg);
             padding: 2rem;
-            border-radius: 12px;
-            border: 1px solid #30363d;
-            transition: transform 0.3s ease;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: transform 0.3s, border-color 0.3s;
         }
-
-        .card:hover {
-            transform: translateY(-5px); /* 滑鼠移上去會浮起來 */
+        .job-card:hover .job-content {
+            transform: translateY(-5px);
             border-color: var(--accent);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
         }
 
-        .card h3 { color: var(--accent); margin-bottom: 0.5rem; }
-        .card .date { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem; display: block; }
+        .job-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 10px; flex-wrap: wrap;
+        }
+        .job-title { font-size: 1.3rem; font-weight: 700; color: var(--text-main); }
+        .job-company { color: var(--accent); font-weight: 500; font-size: 1.1rem; }
+        .job-period { 
+            font-family: monospace; font-size: 0.9rem; color: var(--text-muted);
+            background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;
+        }
+        
+        .job-details li { margin-bottom: 8px; color: var(--text-muted); list-style-type: none; position: relative; padding-left: 20px; }
+        .job-details li::before {
+            content: "▹"; position: absolute; left: 0; color: var(--accent);
+        }
 
-        /* --- Skills (技能標籤) --- */
-        .skill-tag {
+        /* --- 7. 專案網格 --- */
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+        .project-card {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            display: flex; flex-direction: column; height: 100%;
+        }
+        .project-card:hover {
+            transform: translateY(-7px);
+            border-color: var(--accent);
+            background: rgba(22, 27, 34, 1);
+        }
+        
+        .project-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .folder-icon { color: var(--accent); font-size: 2rem; }
+        .project-links a { color: var(--text-muted); margin-left: 15px; font-size: 1.2rem; }
+        .project-links a:hover { color: var(--accent); }
+
+        .project-card h3 { font-size: 1.4rem; margin-bottom: 1rem; color: var(--text-main); }
+        .project-desc { color: var(--text-muted); font-size: 0.95rem; flex-grow: 1; margin-bottom: 1.5rem; }
+        
+        .tech-tags { display: flex; flex-wrap: wrap; gap: 10px; font-family: monospace; font-size: 0.8rem; color: var(--text-muted); }
+        .tech-tags span { color: var(--accent); }
+
+        /* --- 8. 技能區塊 --- */
+        .skills-container {
+            display: flex; flex-wrap: wrap; gap: 20px;
+        }
+        .skill-box {
+            flex: 1 1 300px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .skill-box h3 {
+            color: var(--accent); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
+        }
+        .skill-list span {
             display: inline-block;
-            padding: 8px 16px;
             margin: 5px;
+            padding: 5px 12px;
             background: #21262d;
             border-radius: 20px;
             font-size: 0.9rem;
-            border: 1px solid #30363d;
+            border: 1px solid transparent;
+            transition: 0.3s;
         }
-        .skill-tag:hover { border-color: var(--accent); color: var(--accent); }
+        .skill-list span:hover {
+            border-color: var(--accent);
+            color: var(--text-main);
+            box-shadow: 0 0 10px var(--accent-glow);
+            transform: scale(1.05);
+        }
 
         /* --- Footer --- */
         footer {
             text-align: center;
-            padding: 2rem;
-            border-top: 1px solid #30363d;
+            padding: 4rem 2rem;
             color: var(--text-muted);
+            font-size: 0.9rem;
         }
+        .social-links { margin-bottom: 20px; }
+        .social-links a { font-size: 1.5rem; color: var(--text-muted); margin: 0 15px; }
+        .social-links a:hover { color: var(--accent); }
 
-        /* --- RWD 手機版調整 (Media Query) --- */
-        /* 當螢幕寬度小於 768px (平板/手機) 時執行這裡的 CSS */
+        /* --- RWD --- */
         @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5rem; }
-            .nav-links { display: none; } /* 手機版暫時隱藏選單，保持極簡 */
-            section { padding: 3rem 5%; }
+            .hero { flex-direction: column-reverse; text-align: center; padding-top: 6rem; justify-content: center; }
+            .hero h1 { font-size: 2.8rem; }
+            .nav-links { display: none; }
+            section { padding: 5rem 6%; }
+            .timeline::before { left: 20px; } /* 線移到左邊 */
+            .job-card { padding-left: 50px; } /* 內容靠左 */
+            .job-card::after { left: 16px; } /* 點移到左邊 */
+            .company-logo { 
+                position: relative; width: 50px; height: 50px; margin-bottom: 10px; 
+                left: auto; top: auto; /* 手機版 Logo 放到卡片裡面或上面，不掛在線旁 */
+            }
+            .job-header { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
-    <nav>
-        <div class="logo">Rowan.Dev</div>
+    <!-- 導覽列 -->
+    <nav id="navbar">
+        <div class="nav-logo">Rowan<span>.Dev</span></div>
         <div class="nav-links">
-            <a href="#about">About</a>
-            <a href="#experience">Experience</a>
-            <a href="#skills">Skills</a>
-            <a href="#contact">Contact</a>
+            <a href="#about">關於我</a>
+            <a href="#experience">職涯</a>
+            <a href="#projects">專案</a>
+            <a href="#skills">技能</a>
         </div>
     </nav>
 
-    <section class="hero">
-        <div>
-            <p style="color: var(--accent);">Hi, my name is</p>
-            <h1>JunRong Tsai.<br><span style="color: #8b949e;">I build things for the backend.</span></h1>
-            
-            <div class="typewriter" id="typing-text"></div>
-            
-            <a href="#experience" class="cta-btn">Check my work</a>
+    <!-- 1. 首頁 Hero -->
+    <section class="hero" id="about">
+        <div class="hero-content reveal">
+            <span class="hero-greeting">Hi, I am</span>
+            <h1>蔡俊榮 (Rowan)</h1>
+            <h2>CIM 電腦整合製造工程師</h2>
+            <p>
+                擅長將工廠的「噪音」轉化為「數據」。<br>
+                專注於 <b>MES 系統開發</b>、<b>PLC 設備通訊</b> 與 <b>自動化流程設計</b>。<br>
+                致力於用程式碼解決產線痛點，打造穩定高效的製造系統。
+            </p>
+            <div class="cta-group">
+                <a href="mailto:markben841027@gmail.com" class="cta-button">
+                    <i class="fa-regular fa-envelope"></i> 聯絡我
+                </a>
+            </div>
+        </div>
+
+        <div class="profile-container reveal">
+            <div class="profile-wrapper">
+                <!-- 圖片路徑 -->
+                <img src="images/profile.jpg" alt="Rowan Tsai" class="profile-img">
+            </div>
         </div>
     </section>
 
-    <section id="about">
-        <h2>01. About Me</h2>
-        <div style="max-width: 700px;">
-            <p>
-                Hello！我是俊榮 (Rowan)，一名熱衷於解決複雜問題的軟體工程師。
-                我的專長在於後端開發與系統架構設計，比起前端的像素對齊，我更享受於 Database 查詢優化與 API 的邏輯設計。
-            </p>
-            <br>
-            <p>
-                目前定居高雄，專注於 <strong>C# ASP.NET</strong> 開發。在此之前，我有豐富的 Java Web 與 Python 經驗。
-                我也熱衷於自動化工具的開發，曾為團隊開發過自動備份工具與 PLC 監控系統，致力於用程式碼提升工作效率。
-            </p>
-        </div>
-    </section>
-
+    <!-- 2. 職涯經歷 (重點：滾動特效 + Logo) -->
     <section id="experience">
-        <h2>02. Experience & Projects</h2>
-        <div class="grid-container">
-            <div class="card">
-                <h3>Backend Engineer</h3>
-                <span class="date">Oct 2025 - Present | Kaohsiung</span>
-                <p>專注於 C# ASP.NET 系統開發與維護。協助導入現代化開發流程，提升系統穩定性。</p>
-            </div>
-
-            <div class="card">
-                <h3>PLC Monitoring System</h3>
-                <span class="date">Side Project</span>
-                <p>開發針對 Panasonic (HONQCHI) 與 Omron (NIKKISO) PLC 的即時監控系統。透過 C# 實現每 5 秒自動輪詢與異常警報。</p>
-            </div>
-
-            <div class="card">
-                <h3>AutoBackup Tool</h3>
-                <span class="date">WinForms Tool</span>
-                <p>開發 "AutoBackupForYunHsu" 工具，自動化處理檔案備份與壓縮流程，大幅減少手動作業時間。</p>
-            </div>
+        <h2 data-index="01.">職涯經歷</h2>
+        
+        <div class="timeline">
             
-            <div class="card">
-                <h3>Sim Racing Setup</h3>
-                <span class="date">Personal Interest</span>
-                <p>熱衷於模擬賽車硬體研究 (Logitech G923)，並嘗試結合程式控制與硬體回饋。</p>
+            <!-- Job 1: 華新科技 -->
+            <div class="job-card reveal">
+                <!-- Logo 區塊：請將圖片存為 images/walsin.png -->
+                <div class="company-logo">
+                    <!-- 如果有圖片，請使用 img 標籤；若無，顯示文字 -->
+                    <img src="images/walsin.png" alt="Walsin Technology" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="logo-placeholder" style="display:none;">Walsin</div>
+                </div>
+                <div class="job-content">
+                    <div class="job-header">
+                        <div>
+                            <div class="job-title">CIM 工程師</div>
+                            <div class="job-company">華新科技 (Walsin Technology)</div>
+                        </div>
+                        <span class="job-period">2025/10 - 現今</span> <!-- 修正時間以接續 AOET -->
+                    </div>
+                    <ul class="job-details">
+                        <li>負責 MES (製造執行系統) 功能開發與維護，確保產線資訊流穩定。</li>
+                        <li>整合生產設備數據 (IoT)，優化製程參數收集流程。</li>
+                        <li>開發自動化工具，提升工廠營運效率。</li>
+                    </ul>
+                </div>
             </div>
+
+            <!-- Job 2: 先進光電 -->
+            <div class="job-card reveal">
+                <div class="company-logo">
+                    <img src="images/aoet.png" alt="AOET" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="logo-placeholder" style="display:none;">AOET</div>
+                </div>
+                <div class="job-content">
+                    <div class="job-header">
+                        <div>
+                            <div class="job-title">MES 工程師</div>
+                            <div class="job-company">先進光電 (AOET)</div>
+                        </div>
+                        <span class="job-period">2023/06 - 2025/09</span>
+                    </div>
+                    <ul class="job-details">
+                        <li><b>MES 系統客製化</b>：使用 C# 設計操作介面與控制邏輯。</li>
+                        <li><b>自動化排程</b>：利用 WinForms 與批次腳本建立報表自動寄送機制。</li>
+                        <li><b>流程自動化 (RPA)</b>：維護 UiPath 流程，減少人工操作。</li>
+                        <li><b>資料處理</b>：撰寫 Python 爬蟲與 Excel VBA，提升資料整合效率。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Job 3: 鼎新數智 -->
+            <div class="job-card reveal">
+                <div class="company-logo">
+                    <img src="images/digiwin.png" alt="Digiwin" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div class="logo-placeholder" style="display:none;">Digiwin</div>
+                </div>
+                <div class="job-content">
+                    <div class="job-header">
+                        <div>
+                            <div class="job-title">軟體工程師</div>
+                            <div class="job-company">鼎新數智 (Digiwin)</div>
+                        </div>
+                        <span class="job-period">2019/10 - 2023/06</span>
+                    </div>
+                    <ul class="job-details">
+                        <li><b>報表平台開發</b>：使用 FineReport 整合 Oracle DB。</li>
+                        <li><b>Web 全端開發</b>：使用 Java Web, HTML, TypeScript 維護系統。</li>
+                        <li><b>系統整合</b>：協助 ETL 資料交換與 DevOps (Jenkins/SVN) 管理。</li>
+                    </ul>
+                </div>
+            </div>
+
         </div>
     </section>
 
+    <!-- 3. 精選專案 -->
+    <section id="projects">
+        <h2 data-index="02.">精選專案</h2>
+        <div class="project-grid">
+            
+            <!-- Project 1 -->
+            <div class="project-card reveal">
+                <div class="project-top">
+                    <div class="folder-icon"><i class="fa-regular fa-folder"></i></div>
+                    <div class="project-links">
+                        <a href="#" title="GitHub"><i class="fa-brands fa-github"></i></a>
+                    </div>
+                </div>
+                <h3>PLC 即時監控系統</h3>
+                <div class="project-desc">
+                    透過 Modbus/TCP 協定與 Panasonic 及 Omron PLC 通訊。實現每 5 秒自動輪詢 (Polling) 機台數據，即時掌握產線設備狀態與異常警報。
+                </div>
+                <div class="tech-tags">
+                    <span>C#</span>
+                    <span>Modbus</span>
+                    <span>WinForms</span>
+                    <span>Multi-threading</span>
+                </div>
+            </div>
+
+            <!-- Project 2 -->
+            <div class="project-card reveal">
+                <div class="project-top">
+                    <div class="folder-icon"><i class="fa-regular fa-folder"></i></div>
+                </div>
+                <h3>AutoBackup 自動化工具</h3>
+                <div class="project-desc">
+                    開發 Windows Service 工具，自動偵測關鍵資料夾變動並進行壓縮備份。包含完整 Log 記錄與排程設定，大幅降低人工備份成本。
+                </div>
+                <div class="tech-tags">
+                    <span>C#</span>
+                    <span>IO Stream</span>
+                    <span>Automation</span>
+                </div>
+            </div>
+
+            <!-- Project 3 -->
+            <div class="project-card reveal">
+                <div class="project-top">
+                    <div class="folder-icon"><i class="fa-regular fa-folder"></i></div>
+                </div>
+                <h3>自動化郵件報表系統</h3>
+                <div class="project-desc">
+                    整合 WinForms 與 Python 腳本，每日自動產出機台良率與產能報表。將數據視覺化並自動寄送給部門主管。
+                </div>
+                <div class="tech-tags">
+                    <span>Python</span>
+                    <span>VBA</span>
+                    <span>SMTP</span>
+                    <span>RPA</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 4. 技能 & 學歷 -->
     <section id="skills">
-        <h2>03. Tech Stack</h2>
-        <p style="margin-bottom: 1rem;">Here are a few technologies I've been working with recently:</p>
+        <h2 data-index="03.">專業技能 & 學歷</h2>
         
-        <div style="margin-bottom: 2rem;">
-            <h4 style="color: var(--accent); margin-bottom: 10px;">Backend Core</h4>
-            <span class="skill-tag">C# / .NET</span>
-            <span class="skill-tag">Java Web</span>
-            <span class="skill-tag">Python (Django/Flask)</span>
-        </div>
+        <div class="skills-container reveal">
+            
+            <div class="skill-box">
+                <h3><i class="fa-solid fa-code"></i> 後端與系統開發</h3>
+                <div class="skill-list">
+                    <span>C# (.NET)</span>
+                    <span>Java (Spring)</span>
+                    <span>Python</span>
+                    <span>WinForms</span>
+                    <span>RESTful API</span>
+                </div>
+            </div>
 
-        <div style="margin-bottom: 2rem;">
-            <h4 style="color: var(--accent); margin-bottom: 10px;">Database & Cache</h4>
-            <span class="skill-tag">Oracle SQL</span>
-            <span class="skill-tag">Redis</span>
-            <span class="skill-tag">NoSQL</span>
-        </div>
+            <div class="skill-box">
+                <h3><i class="fa-solid fa-database"></i> 資料庫與工具</h3>
+                <div class="skill-list">
+                    <span>Oracle SQL</span>
+                    <span>SQL Server</span>
+                    <span>Redis</span>
+                    <span>Git / SVN</span>
+                    <span>Jenkins</span>
+                </div>
+            </div>
 
-        <div>
-            <h4 style="color: var(--accent); margin-bottom: 10px;">DevOps & Tools</h4>
-            <span class="skill-tag">Git / GitHub</span>
-            <span class="skill-tag">Docker</span>
-            <span class="skill-tag">Jenkins</span>
-            <span class="skill-tag">Linux</span>
+            <div class="skill-box">
+                <h3><i class="fa-solid fa-industry"></i> 領域知識</h3>
+                <div class="skill-list">
+                    <span>MES 系統</span>
+                    <span>PLC (Modbus)</span>
+                    <span>RPA</span>
+                    <span>ETL</span>
+                </div>
+            </div>
+
+            <!-- 學歷放在這裡，作為一個特別的 Box -->
+            <div class="skill-box" style="border-color: var(--accent);">
+                <h3><i class="fa-solid fa-graduation-cap"></i> 學歷</h3>
+                <p style="color: var(--text-main); font-weight: bold; margin-bottom: 5px;">國立高雄科技大學</p>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">資訊管理系 (2014 - 2018)</p>
+            </div>
+
         </div>
     </section>
 
-    <section id="contact" style="text-align: center;">
-        <h2>04. What's Next?</h2>
-        <h1 style="font-size: 3rem; margin-bottom: 1rem;">Get In Touch</h1>
-        <p style="max-width: 600px; margin: 0 auto 2rem auto;">
-            我目前對於新的技術挑戰持開放態度。無論是關於 C# 架構的討論，或是想聊聊模擬賽車的設置，都歡迎隨時聯絡我！
-        </p>
-        <a href="mailto:markben841027@gmail.com" class="cta-btn" style="font-size: 1.2rem;">Say Hello</a>
-        
-        <div style="margin-top: 3rem;">
-            <a href="https://github.com/JunRongTsai" target="_blank" style="margin: 0 10px; font-size: 1.5rem;">GitHub</a>
-            <a href="https://www.cake.me/s--8VT7YkOQjDiW9T1pojUQgg--/jun-rong-tsai-3c69ee" target="_blank" style="margin: 0 10px; font-size: 1.5rem;">CakeResume</a>
-        </div>
-    </section>
-
+    <!-- Footer -->
     <footer>
-        <p>Designed & Built by Rowan (JunRong) Tsai</p>
-        <p style="font-size: 0.8rem; margin-top: 5px;">&copy; 2025 All rights reserved.</p>
+        <div class="social-links">
+            <a href="mailto:markben841027@gmail.com"><i class="fa-solid fa-envelope"></i></a>
+            <!-- 這些連結目前是無效的，保留圖示裝飾 -->
+            <a href="#" class="disabled-link"><i class="fa-brands fa-github"></i></a>
+            <a href="#" class="disabled-link"><i class="fa-solid fa-user-tie"></i></a>
+        </div>
+        <p>Designed & Built by Rowan Tsai</p>
+        <p style="font-size: 0.8rem; margin-top: 10px;">&copy; 2025 All rights reserved.</p>
     </footer>
 
+    <!-- JS: 滾動特效腳本 -->
     <script>
-        // --- 邏輯：打字機特效 ---
-        const textToType = "I engineer robust solutions for the web.";
-        const typeElement = document.getElementById('typing-text');
-        let charIndex = 0;
+        // 當頁面滾動時觸發
+        window.addEventListener('scroll', reveal);
 
-        function typeWriter() {
-            if (charIndex < textToType.length) {
-                typeElement.innerHTML += textToType.charAt(charIndex);
-                charIndex++;
-                setTimeout(typeWriter, 100); // 打字速度 (毫秒)
+        function reveal() {
+            var reveals = document.querySelectorAll('.reveal');
+
+            for (var i = 0; i < reveals.length; i++) {
+                var windowheight = window.innerHeight;
+                var revealtop = reveals[i].getBoundingClientRect().top;
+                var revealpoint = 150; // 觸發點：元素進入視窗底部往上 150px 時
+
+                if (revealtop < windowheight - revealpoint) {
+                    reveals[i].classList.add('active');
+                } else {
+                    // 如果希望滾回去會消失，把下面這行取消註解
+                    // reveals[i].classList.remove('active');
+                }
             }
         }
-
-        // 當網頁載入完成後開始打字
-        window.onload = typeWriter;
-
-        // --- 邏輯：平滑捲動 (針對 Safari 等舊版瀏覽器支援) ---
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
-            });
-        });
+        
+        // 頁面載入時先觸發一次，避免首屏內容不顯示
+        reveal();
     </script>
 </body>
 </html>
