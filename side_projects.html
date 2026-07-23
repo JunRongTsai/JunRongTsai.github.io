@@ -3,48 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- SEO 優化 -->
+    <meta name="description" content="蔡俊榮 (Rowan Tsai) 的休憩區，收錄自製小工具與貪食蛇、俄羅斯方塊等網頁小遊戲。">
+    <meta property="og:title" content="休憩區 (Playground) | Rowan Tsai">
+    <meta property="og:description" content="工程師的摸魚專區：自製小工具與經典網頁小遊戲合集。">
+    <meta property="og:image" content="images/profile.jpg">
+
     <title>休憩區 (Playground) | Rowan Tsai</title>
     <!-- 引入 FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入獨立的 CSS (沿用 Index 的變數系統，保持風格一致) -->
+    <link rel="stylesheet" href="style.css">
     <style>
-        /* --- 沿用 Index 的變數系統 (保持風格一致) --- */
-        :root {
-            --bg-color: #0d1117;       
-            --bg-gradient: radial-gradient(circle at top right, #1f293a 0%, #0d1117 40%);
-            --card-bg: rgba(22, 27, 34, 0.8); 
-            --text-main: #f0f6fc;      
-            --text-muted: #8b949e;     
-            --accent: #58a6ff;         
-            --accent-glow: rgba(88, 166, 255, 0.3);
-            --border: #30363d;         
-            --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Helvetica, Arial, sans-serif;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            background-color: var(--bg-color);
-            background-image: var(--bg-gradient);
-            background-attachment: fixed;
-            color: var(--text-main);
-            font-family: var(--font-stack);
-            line-height: 1.7;
-            overflow-x: hidden;
-        }
-
-        a { text-decoration: none; transition: 0.2s; }
-
-        /* 簡易導覽列 */
-        nav {
-            position: fixed; top: 0; width: 100%;
-            background: rgba(13, 17, 23, 0.95);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding: 1rem 5%;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 1000;
-        }
-        .nav-logo { font-size: 1.3rem; font-weight: 800; color: var(--text-main); }
-        .nav-logo span { color: var(--accent); }
         .back-link { color: var(--text-muted); font-size: 0.95rem; }
         .back-link:hover { color: var(--accent); }
 
@@ -88,6 +59,11 @@
             border: 1px solid var(--accent); padding: 4px 12px; border-radius: 4px;
         }
         .tool-link:hover { background: var(--accent-glow); }
+        .tool-link.disabled-link {
+            color: var(--text-muted); border-color: var(--border);
+            opacity: 0.6; cursor: not-allowed;
+        }
+        .tool-link.disabled-link:hover { background: none; }
 
         /* --- 2. 遊戲網格 (Arcade) --- */
         .game-grid {
@@ -193,21 +169,21 @@
                 <div class="tool-icon"><i class="fa-solid fa-file-code"></i></div>
                 <div class="tool-title">Log Parser</div>
                 <div class="tool-desc">快速分析 Server Log 並產出 Excel 報表的小工具。</div>
-                <a href="#" class="tool-link"><i class="fa-brands fa-github"></i> View Code</a>
+                <span class="tool-link disabled-link" title="即將推出"><i class="fa-solid fa-lock"></i> 敬請期待</span>
             </div>
 
             <div class="tool-card">
                 <div class="tool-icon"><i class="fa-solid fa-robot"></i></div>
                 <div class="tool-title">Auto Clicker</div>
                 <div class="tool-desc">簡單的滑鼠連點程式，適用於重複性作業。</div>
-                <a href="#" class="tool-link"><i class="fa-brands fa-github"></i> View Code</a>
+                <span class="tool-link disabled-link" title="即將推出"><i class="fa-solid fa-lock"></i> 敬請期待</span>
             </div>
 
             <div class="tool-card">
                 <div class="tool-icon"><i class="fa-solid fa-network-wired"></i></div>
                 <div class="tool-title">IP Scanner</div>
                 <div class="tool-desc">區域網路設備掃描工具，快速找出佔用 IP。</div>
-                <a href="#" class="tool-link"><i class="fa-brands fa-github"></i> View Code</a>
+                <span class="tool-link disabled-link" title="即將推出"><i class="fa-solid fa-lock"></i> 敬請期待</span>
             </div>
 
         </div>
@@ -217,7 +193,6 @@
         
         <div class="game-grid">
             <!-- 貪食蛇卡片 -->
-            <!-- 這裡預設連結到 snake.html，如果你還沒做，它會顯示 404 或載入 placeholder -->
             <div class="game-card" onclick="playGame('snake.html', '經典貪食蛇 (Snake)')">
                 <div class="game-thumbnail">
                     <i class="fa-solid fa-staff-snake"></i>
@@ -226,8 +201,7 @@
             </div>
 
             <!-- 俄羅斯方塊卡片 -->
-            <!-- <div class="game-card" onclick="alert('開發中... 敬請期待！')"> -->
-			<div class="game-card" onclick="playGame('tetris.html', '俄羅斯方塊 (Tetris)')">
+            <div class="game-card" onclick="playGame('tetris.html', '俄羅斯方塊 (Tetris)')">
                 <div class="game-thumbnail">
                     <i class="fa-solid fa-cubes"></i>
                 </div>
@@ -270,24 +244,7 @@
             
             // 3. 設定 Iframe 內容
             const frame = document.getElementById('game-frame');
-            
-            // --- 暫時性的 Placeholder 邏輯 (等你真的有 snake.html 後可移除這段 if) ---
-            // 為了讓你在沒有 snake.html 時也能看到效果，我加了檢測
-            // 實際上線時，直接用 frame.src = url; 即可
-            
-            // 模擬載入 (實際請把這行改成 frame.src = url;)
-             frame.src = url; 
-            
-            // 暫時顯示一個說明畫面，方便你測試 layout
-            /*frame.srcdoc = `
-                <body style="background-color:#000; color:#58a6ff; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100vh; margin:0; font-family:sans-serif;">
-                    <h2 style="margin-bottom:10px;">正在載入 ${title}...</h2>
-                    <p style="color:#8b949e;">( 這是子框架區域 iframe )</p>
-                    <p style="color:#8b949e; font-size:0.8rem;">請確認你的資料夾內是否有 <b>${url}</b> 檔案</p>
-                    <div style="margin-top:20px; width:40px; height:40px; border:3px solid #333; border-top:3px solid #58a6ff; border-radius:50%; animation:spin 1s linear infinite;"></div>
-                    <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
-                </body>
-            `;*/
+            frame.src = url;
 
             // 4. 自動捲動到遊戲區
             viewer.scrollIntoView({ behavior: 'smooth', block: 'center' });

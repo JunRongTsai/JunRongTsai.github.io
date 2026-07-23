@@ -3,20 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <!-- SEO 優化 -->
+    <meta name="description" content="用瀏覽器就能玩的經典俄羅斯方塊，支援 Hold、Next 預覽與手機觸控操作。">
+    <meta property="og:title" content="俄羅斯方塊 | Arcade">
+    <meta property="og:description" content="Rowan Tsai 休憩區內建的網頁版俄羅斯方塊小遊戲。">
+    <meta property="og:image" content="images/profile.jpg">
+
     <title>俄羅斯方塊 | Arcade</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入獨立的 CSS (共用主站變數系統) -->
+    <link rel="stylesheet" href="style.css">
     <style>
-        /* --- 變數系統 --- */
+        /* --- 遊戲專屬變數 --- */
         :root {
-            --bg-color: #0d1117;
-            --accent: #58a6ff;
-            --text-main: #f0f6fc;
-            --text-muted: #8b949e;
-            --border: #30363d;
             --grid-bg: #161b22;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        * { margin: 0; padding: 0; user-select: none; }
 
         body {
             background-color: #000;
