@@ -244,6 +244,9 @@
             
             // 3. 設定 Iframe 內容
             const frame = document.getElementById('game-frame');
+            // 各遊戲畫面實際所需高度不同（例如俄羅斯方塊 320x640 畫布較高），依遊戲調整 iframe 高度避免上下被裁切
+            const frameHeights = { 'tetris.html': 700 };
+            frame.style.height = (frameHeights[url] || 600) + 'px';
             frame.src = url;
 
             // 4. 自動捲動到遊戲區
