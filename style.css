@@ -156,6 +156,8 @@ h2::after {
     transition: all 0.5s ease;
     /* [調整] 這裡將圖片內容稍微往下拉 15px，避免切到頭髮 */
     object-position: center 15px;
+    /* object-position 下移後，容器頂端會露出背景，補白色與照片底色融合 */
+    background-color: #fff;
 }
 .profile-container:hover .profile-img {
     transform: scale(1.03);
