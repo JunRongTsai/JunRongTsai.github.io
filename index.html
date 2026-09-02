@@ -9,14 +9,36 @@
     <meta property="og:title" content="蔡俊榮 (Rowan) | 後端軟體工程師">
     <meta property="og:description" content="專注於高效率後端系統開發、自動化流程設計與資料庫優化。">
     <meta property="og:image" content="images/profile.jpg">
-    
+    <link rel="canonical" href="https://junrongtsai.github.io/">
+
     <title>蔡俊榮 (Rowan) | 後端軟體工程師</title>
-    
+
+    <meta name="theme-color" content="#0d1117">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230d1117'/%3E%3Ctext x='32' y='45' font-family='Arial,Helvetica,sans-serif' font-weight='800' font-size='34' fill='%2358a6ff' text-anchor='middle'%3ER%3C/text%3E%3C/svg%3E">
+
     <!-- 引入 FontAwesome -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- 引入獨立的 CSS -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- 結構化資料 (SEO) -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "蔡俊榮",
+        "alternateName": "Rowan Tsai",
+        "jobTitle": "後端軟體工程師",
+        "url": "https://junrongtsai.github.io/",
+        "image": "https://junrongtsai.github.io/images/profile.jpg",
+        "email": "mailto:markben841027@gmail.com",
+        "worksFor": { "@type": "Organization", "name": "華新科技 (Walsin Technology)" },
+        "alumniOf": { "@type": "CollegeOrUniversity", "name": "國立高雄科技大學" },
+        "knowsAbout": ["C#", "Java", "Python", "MES", "RESTful API", "Oracle SQL", "SQL Server", "PLC", "RPA", "AI Coding"]
+    }
+    </script>
 </head>
 <body>
 
@@ -24,9 +46,9 @@
     <nav id="navbar">
         <div class="nav-logo">Rowan<span>.Dev</span></div>
         
-        <div class="hamburger" onclick="toggleMenu()">
+        <button type="button" class="hamburger" aria-label="開啟導覽選單" aria-expanded="false" aria-controls="nav-links" onclick="toggleMenu()">
             <i class="fa-solid fa-bars"></i>
-        </div>
+        </button>
 
         <div class="nav-links" id="nav-links">
             <a href="#about" onclick="toggleMenu()">關於我</a>
@@ -38,6 +60,7 @@
         </div>
     </nav>
 
+    <main>
     <!-- 1. 首頁 Hero (active class 確保秒開) -->
     <section class="hero" id="about">
         <div class="hero-content reveal active">
@@ -90,9 +113,12 @@
                         <span class="job-period">2025/10 - 現今</span>
                     </div>
                     <ul class="job-details">
-                        <li>負責 MES (製造執行系統) 功能開發與維護，確保產線資訊流高可用性。</li>
-                        <li>整合 IoT 設備數據，優化製程參數收集與即時監控流程。</li>
-                        <li>開發自動化工具提升營運效率，解決現場痛點。</li>
+                        <li><b>MES 功能優化與開發</b>：這一年主要負責既有 MES 功能優化，並持續開發新功能模組，確保產線資訊流高可用性。</li>
+                        <li><b>PLC 機台監控</b>：串接產線 PLC 設備，即時掌握機台運作狀態與關鍵製程參數。</li>
+                        <li><b>環境溫溼度監控</b>：建置各站點溫溼度監控機制，確保生產環境條件符合製程要求。</li>
+                        <li><b>監控資訊整合</b>：將監控資訊串接至 SingleR 內部網頁，方便各單位人員即時查看設備狀態。</li>
+                        <li><b>異常告警通知</b>：建立機台異常 LINE 即時通知機制，加快現場人員應變速度。</li>
+                        <li><b>廠區即時監控圖</b>：開發廠區即時監控圖，視覺化呈現各產線與設備運作狀態。</li>
                     </ul>
                 </div>
             </div>
@@ -212,6 +238,12 @@
                     <span>MES 系統</span><span>PLC (Modbus)</span><span>RPA</span><span>ETL</span>
                 </div>
             </div>
+            <div class="skill-box">
+                <h3><i class="fa-solid fa-robot"></i> AI 協作開發</h3>
+                <div class="skill-list">
+                    <span>AI Coding (Claude Code)</span><span>Prompt Engineering</span><span>AI 輔助除錯與重構</span>
+                </div>
+            </div>
             <div class="skill-box" style="border-color: var(--accent);">
                 <h3><i class="fa-solid fa-graduation-cap"></i> 學歷</h3>
                 <p style="color: var(--text-main); font-weight: bold; margin-bottom: 5px;">國立高雄科技大學</p>
@@ -219,22 +251,23 @@
             </div>
         </div>
     </section>
+    </main>
 
     <!-- Footer -->
     <footer>
         <div class="social-links">
-            <a href="mailto:markben841027@gmail.com"><i class="fa-solid fa-envelope"></i></a>
-            <span class="disabled-link" title="即將推出"><i class="fa-brands fa-github"></i></span>
-            <span class="disabled-link" title="即將推出"><i class="fa-solid fa-user-tie"></i></span>
+            <a href="mailto:markben841027@gmail.com" aria-label="寄送 Email 給 Rowan"><i class="fa-solid fa-envelope"></i></a>
+            <span class="disabled-link" title="即將推出" aria-label="GitHub 連結即將推出"><i class="fa-brands fa-github"></i></span>
+            <span class="disabled-link" title="即將推出" aria-label="個人簡歷連結即將推出"><i class="fa-solid fa-user-tie"></i></span>
         </div>
         <p>Designed & Built by Rowan Tsai</p>
         <p style="font-size: 0.8rem; margin-top: 10px;">&copy; 2025 All rights reserved.</p>
     </footer>
 
     <!-- 回到頂部按鈕 -->
-    <div id="back-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">
+    <button type="button" id="back-to-top" aria-label="回到頂部" onclick="window.scrollTo({top: 0, behavior: 'smooth'});">
         <i class="fa-solid fa-arrow-up"></i>
-    </div>
+    </button>
 
     <!-- JS 腳本區 -->
     <script>
@@ -266,7 +299,8 @@
         // 2. 漢堡選單
         function toggleMenu() {
             const navLinks = document.getElementById('nav-links');
-            navLinks.classList.toggle('active');
+            const isActive = navLinks.classList.toggle('active');
+            document.querySelector('.hamburger').setAttribute('aria-expanded', isActive);
         }
 
         // 3. 滾動特效 (含雙向淡入淡出)
