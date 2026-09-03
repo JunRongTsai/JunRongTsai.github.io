@@ -2,6 +2,9 @@
 # 重新產生履歷 PDF：改動下面的內容後執行 `python tools/build_resume.py` 即可覆蓋 resume.pdf。
 # 內嵌字型用系統內建的微軟正黑體 (與網站 CSS 字型一致)，需要在有安裝該字型的 Windows 環境執行；
 # 若换到其他系統，把下面兩個 TTFont 路徑換成該系統上的繁中字型檔即可。
+# 產生完會自動把 index.html 下載按鈕的 download="RowanTsai_Resume_YYYYMMDD.pdf" 日期改成今天。
+import re
+from datetime import date
 from pathlib import Path
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
@@ -168,3 +171,22 @@ story.append(Paragraph("<font name='%s'>國立高雄科技大學</font>　資訊
 
 doc.build(story)
 print("built", OUT_PATH)
+
+# 同步首頁下載按鈕的檔名日期，避免 PDF 更新了但下載下來還掛著舊日期。
+# newline="" 保留原本的換行字元，不然整個檔案會被改寫成不同的行尾。
+stamp = date.today().strftime("%Y%m%d")
+index_path = Path(__file__).resolve().parent.parent / "index.html"
+with open(index_path, "r", encoding="utf-8", newline="") as f:
+    html = f.read()
+patched, replaced = re.subn(
+    r'download="RowanTsai_Resume_\d{8}\.pdf"',
+    f'download="RowanTsai_Resume_{stamp}.pdf"',
+    html,
+)
+if replaced:
+    if patched != html:
+        with open(index_path, "w", encoding="utf-8", newline="") as f:
+            f.write(patched)
+    print(f"index.html download filename -> RowanTsai_Resume_{stamp}.pdf")
+else:
+    print("warning: 在 index.html 找不到 download 屬性，請手動確認下載檔名")

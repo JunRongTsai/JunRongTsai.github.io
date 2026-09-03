@@ -26,13 +26,15 @@ body {
     overflow-x: hidden;
 }
 
-/* 滾動動畫樣式 */
-.reveal {
+/* 滾動動畫樣式
+   只有在 JS 有跑起來 (html 帶 .js) 時才隱藏內容等待進場動畫，
+   否則沒有 JS 的環境會因為 opacity:0 讓職涯/專案/技能整片空白 */
+.js .reveal {
     opacity: 0;
     transform: translateY(50px) scale(0.95);
     transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
 }
-.reveal.active {
+.js .reveal.active {
     opacity: 1;
     transform: translateY(0) scale(1);
 }

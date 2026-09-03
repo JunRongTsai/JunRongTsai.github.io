@@ -23,6 +23,9 @@
     <!-- 引入獨立的 CSS -->
     <link rel="stylesheet" href="style.css">
 
+    <!-- 標記 JS 可用，讓 .reveal 進場動畫只在有 JS 時才隱藏內容 (見 style.css) -->
+    <script>document.documentElement.classList.add('js');</script>
+
     <!-- 結構化資料 (SEO) -->
     <script type="application/ld+json">
     {
@@ -85,7 +88,8 @@
                 <a href="mailto:markben841027@gmail.com" class="cta-button">
                     <i class="fa-regular fa-envelope"></i> 聯絡我
                 </a>
-                <a href="resume.pdf" class="cta-button" target="_blank" rel="noopener">
+                <!-- download 檔名日期由 tools/build_resume.py 產生 PDF 時自動更新 -->
+                <a href="resume.pdf" download="RowanTsai_Resume_20260903.pdf" class="cta-button">
                     <i class="fa-solid fa-file-arrow-down"></i> 下載履歷
                 </a>
             </div>

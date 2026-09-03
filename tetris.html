@@ -505,7 +505,10 @@
                 moveDown() {
                     if(!this.collision(0, 1, this.activeTetromino)){
                         this.y++;
-                    } 
+                        // 位置已經離開旋轉當下的位置，先前的 T-Spin 判定不再成立
+                        tSpinFlag = false;
+                        tSpinMini = false;
+                    }
                     // 如果不能移動，這裡不做任何事，交給 gameLoop 的 Lock Delay 判斷
                 }
 
@@ -569,6 +572,10 @@
                     while(!this.collision(0, 1, this.activeTetromino)){
                         this.y++;
                         score += 2;
+                        // 有實際下墜就代表離開了旋轉當下的位置，取消 T-Spin 判定
+                        // (原地硬降不會進到這個迴圈，所以轉完立刻硬降仍算 T-Spin)
+                        tSpinFlag = false;
+                        tSpinMini = false;
                     }
                     this.lock();
                 }
@@ -713,6 +720,9 @@
                 }
                 // 切換後重置鎖定狀態
                 activeLock = false;
+                // 換成另一顆方塊了，先前的 T-Spin 判定不能沿用到新方塊上
+                tSpinFlag = false;
+                tSpinMini = false;
                 drawHoldPiece();
                 canHold = false;
             }
@@ -806,8 +816,10 @@
             }
 
             document.addEventListener("keydown", (e) => {
-                if (gameOver) return;
-                if (e.key === 'p' || e.key === 'P') { togglePause(); return; }
+                // p 在按下 Start Game 前是 undefined，遊戲還沒開始時所有按鍵都不該生效
+                if (gameOver || !p) return;
+                // 不理會長按產生的重複事件，避免連續切換暫停狀態
+                if (e.key === 'p' || e.key === 'P') { if (!e.repeat) togglePause(); return; }
                 if (isPaused) return;
                 if(e.keyCode == 37) {
                     if (!heldKeys.left) { p.moveLeft(); heldKeys.left = true; dasStart.left = Date.now(); }
@@ -840,7 +852,7 @@
             });
 
             function togglePause() {
-                if (gameOver) return;
+                if (gameOver || !p) return; // 遊戲還沒開始就不能暫停 (否則會蓋掉起始畫面且無法復原)
                 isPaused = !isPaused;
                 const overlayEl = document.getElementById('overlay');
                 const btn = document.querySelector('#overlay .btn');
@@ -856,6 +868,8 @@
                     // 避免暫停期間累積的時間造成恢復瞬間強制下落/鎖定
                     dropStart = Date.now();
                     lockStart = Date.now();
+                    // 舊迴圈可能還有一幀排程中，先取消再重啟，否則會變成兩條迴圈同時跑
+                    if (animationFrame) cancelAnimationFrame(animationFrame);
                     gameLoop();
                 }
             }
@@ -868,7 +882,7 @@
 
             function handleMobileInput(action, e) {
                 if (e) e.preventDefault();
-                if (gameOver || isPaused) return;
+                if (gameOver || isPaused || !p) return;
                 switch(action) {
                     case 'LEFT': p.moveLeft(); break;
                     case 'RIGHT': p.moveRight(); break;

@@ -183,7 +183,8 @@
         let food = {};
         let score = 0;
         let level = 1;
-        let d; // 方向
+        let d; // 下一步要走的方向 (可能還沒生效)
+        let appliedDir; // 上一個 tick 實際走的方向，用來擋反向自撞
         let game; // Loop
         let isPaused = false;
         let isGameOver = false;
@@ -202,6 +203,7 @@
             level = 1;
             gameSpeed = BASE_SPEED;
             d = null; // 初始靜止
+            appliedDir = null;
             isGameOver = false;
             isPaused = false;
             scoreEl.innerText = score;
@@ -219,14 +221,30 @@
 
         function createFood() {
             // 隨機產生食物，並確保不會生成在蛇身上
-            let valid = false;
-            while (!valid) {
-                food = {
+            for (let i = 0; i < 100; i++) {
+                const candidate = {
                     x: Math.floor(Math.random() * (canvas.width / box)) * box,
                     y: Math.floor(Math.random() * (canvas.height / box)) * box
                 };
-                valid = !collision(food, snake);
+                if (!collision(candidate, snake)) {
+                    food = candidate;
+                    return;
+                }
             }
+
+            // 隨機取樣連續失敗代表棋盤幾乎被填滿，改成掃描剩下的空格，
+            // 避免蛇長到接近填滿整個棋盤時在這裡無限迴圈把分頁卡死
+            const freeCells = [];
+            for (let x = 0; x < canvas.width; x += box) {
+                for (let y = 0; y < canvas.height; y += box) {
+                    if (!collision({ x, y }, snake)) freeCells.push({ x, y });
+                }
+            }
+            if (freeCells.length === 0) {
+                winGame(); // 沒有空格 = 蛇填滿棋盤，通關
+                return;
+            }
+            food = freeCells[Math.floor(Math.random() * freeCells.length)];
         }
 
         // 隨分數提升難度：每 5 分升一級，速度隨等級加快 (下限 50ms)
@@ -267,20 +285,22 @@
                 return;
             }
 
-            if (key == 37 && d != "RIGHT") d = "LEFT";
-            else if (key == 38 && d != "DOWN") d = "UP";
-            else if (key == 39 && d != "LEFT") d = "RIGHT";
-            else if (key == 40 && d != "UP") d = "DOWN";
+            // 比對 appliedDir (上一步實際走的方向) 而不是 d，
+            // 否則同一個 tick 內連按兩次 (例如 ↑ 再 ←) 會繞過檢查而反向撞到自己
+            if (key == 37 && appliedDir != "RIGHT") d = "LEFT";
+            else if (key == 38 && appliedDir != "DOWN") d = "UP";
+            else if (key == 39 && appliedDir != "LEFT") d = "RIGHT";
+            else if (key == 40 && appliedDir != "UP") d = "DOWN";
         }
 
         // 手機版觸控控制
         function changeDirection(newDir, e) {
             if (e) e.preventDefault();
             if (overlay.style.display === 'block' && !isPaused) return;
-            if (newDir == "LEFT" && d != "RIGHT") d = "LEFT";
-            if (newDir == "UP" && d != "DOWN") d = "UP";
-            if (newDir == "RIGHT" && d != "LEFT") d = "RIGHT";
-            if (newDir == "DOWN" && d != "UP") d = "DOWN";
+            if (newDir == "LEFT" && appliedDir != "RIGHT") d = "LEFT";
+            if (newDir == "UP" && appliedDir != "DOWN") d = "UP";
+            if (newDir == "RIGHT" && appliedDir != "LEFT") d = "RIGHT";
+            if (newDir == "DOWN" && appliedDir != "UP") d = "DOWN";
         }
 
         // --- 繪圖邏輯 ---
@@ -306,6 +326,9 @@
 
             // 如果沒方向(剛開始)，就不動
             if (!d) return;
+
+            // 記錄這個 tick 真正採用的方向，供下次輸入做反向檢查
+            appliedDir = d;
 
             // 吃到食物
             if (snakeX == food.x && snakeY == food.y) {
@@ -369,6 +392,7 @@
             init();
             overlay.style.display = 'none';
             d = "RIGHT"; // 預設向右跑
+            appliedDir = "RIGHT";
             game = setInterval(draw, gameSpeed);
         }
 
@@ -380,6 +404,15 @@
                 localStorage.setItem('snakeHighScore', score);
             }
             showOverlay('Game Over!', `Score: ${score}`, 'Try Again');
+        }
+
+        function winGame() {
+            clearInterval(game);
+            isGameOver = true;
+            if (score > localStorage.getItem('snakeHighScore')) {
+                localStorage.setItem('snakeHighScore', score);
+            }
+            showOverlay('You Win!', `完美通關！Score: ${score}`, 'Play Again');
         }
 
         function togglePause() {
