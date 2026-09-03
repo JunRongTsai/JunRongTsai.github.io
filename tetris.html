@@ -46,7 +46,25 @@
             gap: 20px;
             align-items: flex-start;
             justify-content: center;
+            position: relative;
             /* 移除 scale 縮放，直接用大尺寸 */
+        }
+
+        /* T-Spin / Tetris 等連擊提示訊息 */
+        #combo-msg {
+            position: absolute;
+            top: 45%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: gold;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 20;
+            text-align: center;
+            white-space: nowrap;
         }
 
         canvas {
@@ -196,6 +214,9 @@
         <!-- 主畫布 (尺寸加大到 320x640) -->
         <canvas id="tetrisCanvas" width="320" height="640"></canvas>
 
+        <!-- T-Spin / Tetris 連擊提示 -->
+        <div id="combo-msg"></div>
+
         <!-- 右側面板 -->
         <div class="side-panel">
             <div class="panel-box">
@@ -236,6 +257,8 @@
             <div><span class="key">↓</span> 軟降</div>
             <div><span class="key">Space</span> 硬降 (Hard Drop)</div>
             <div><span class="key">Shift</span> 暫存 (Hold)</div>
+            <div><span class="key">P</span> 暫停</div>
+            <div style="margin-top:10px; font-size:0.85rem; opacity:0.8;">支援 T-Spin 判定加分</div>
         </div>
     </div>
 
@@ -297,9 +320,80 @@
             ];
 
             const PIECES = [
-                [Z, "#ef4444"], [S, "#22c55e"], [T, "#a855f7"], 
-                [O, "#fbbf24"], [L, "#f97316"], [I, "#06b6d4"], [J, "#3b82f6"]
+                [Z, "#ef4444", "Z"], [S, "#22c55e", "S"], [T, "#a855f7", "T"],
+                [O, "#fbbf24", "O"], [L, "#f97316", "L"], [I, "#06b6d4", "I"], [J, "#3b82f6", "J"]
             ];
+
+            // [新增] SRS 踢牆表 (JLSTZ 共用)，key 為 "from,to" 旋轉狀態
+            // 座標系統 y 向下為正，故已將標準 SRS 表 (y 向上為正) 的 y 值反轉
+            const SRS_KICKS = {
+                "0,1": [[0,0],[-1,0],[-1,-1],[0,2],[-1,2]],
+                "1,0": [[0,0],[1,0],[1,1],[0,-2],[1,-2]],
+                "1,2": [[0,0],[1,0],[1,1],[0,-2],[1,-2]],
+                "2,1": [[0,0],[-1,0],[-1,-1],[0,2],[-1,2]],
+                "2,3": [[0,0],[1,0],[1,-1],[0,2],[1,2]],
+                "3,2": [[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],
+                "3,0": [[0,0],[-1,0],[-1,1],[0,-2],[-1,-2]],
+                "0,3": [[0,0],[1,0],[1,-1],[0,2],[1,2]]
+            };
+
+            // [新增] T-Spin 判定狀態
+            let tSpinFlag = false;
+            let tSpinMini = false;
+
+            function isCornerFilled(x, y) {
+                if (x < 0 || x >= COLS || y >= ROWS) return true; // 牆壁/地板視為已填滿
+                if (y < 0) return false; // board 上方是開放空間
+                return board[y][x] !== "VACANT";
+            }
+
+            // 依「三角判定法」檢查目前 T 方塊是否構成 T-Spin，並判斷是否為 Mini
+            function evaluateTSpin(piece, kickIndex) {
+                const x = piece.x, y = piece.y;
+                const corners = {
+                    tl: isCornerFilled(x, y),
+                    tr: isCornerFilled(x + 2, y),
+                    bl: isCornerFilled(x, y + 2),
+                    br: isCornerFilled(x + 2, y + 2)
+                };
+                const filledCount = Object.values(corners).filter(Boolean).length;
+                if (filledCount < 3) {
+                    tSpinFlag = false;
+                    tSpinMini = false;
+                    return;
+                }
+
+                // 依方塊尖端朝向 (tetrominoN: 0=上 1=右 2=下 3=左) 決定「前方」兩個角
+                let front1, front2;
+                if (piece.tetrominoN === 0) { front1 = corners.tl; front2 = corners.tr; }
+                else if (piece.tetrominoN === 1) { front1 = corners.tr; front2 = corners.br; }
+                else if (piece.tetrominoN === 2) { front1 = corners.bl; front2 = corners.br; }
+                else { front1 = corners.tl; front2 = corners.bl; }
+
+                const frontFilled = (front1 ? 1 : 0) + (front2 ? 1 : 0);
+                // 前方兩角都被填滿才是完整 T-Spin；若只有一角但用的是踢牆表最後一組 (index 4)，
+                // 依官方規則仍視為完整 T-Spin (例如經典的 T-Spin Triple)
+                tSpinFlag = true;
+                tSpinMini = frontFilled < 2 && kickIndex !== 4;
+            }
+
+            function tSpinLabel(mini, cleared) {
+                let label = mini ? 'T-SPIN MINI' : 'T-SPIN';
+                if (cleared === 1) label += ' SINGLE';
+                else if (cleared === 2) label += ' DOUBLE';
+                else if (cleared === 3) label += ' TRIPLE';
+                return label;
+            }
+
+            let comboMsgTimeout;
+            function showComboMessage(text) {
+                const el = document.getElementById('combo-msg');
+                if (!el) return;
+                el.textContent = text;
+                el.style.opacity = '1';
+                clearTimeout(comboMsgTimeout);
+                comboMsgTimeout = setTimeout(() => { el.style.opacity = '0'; }, 1200);
+            }
 
             let board = [];
             let score = 0;
@@ -320,6 +414,13 @@
             const LOCK_DELAY = 500; // 0.5秒
             let lockStart = 0;
             let activeLock = false;
+
+            // [新增] DAS (Delayed Auto Shift)：長按左右鍵時的連續移動
+            let heldKeys = { left: false, right: false };
+            let dasStart = { left: 0, right: 0 };
+            let lastRepeat = { left: 0, right: 0 };
+            const DAS_DELAY = 170; // 按住多久後開始連發 (ms)
+            const DAS_INTERVAL = 40; // 連發間隔 (ms)
 
             document.getElementById('highScore').innerText = highScore;
 
@@ -355,9 +456,10 @@
             }
 
             class Piece {
-                constructor(tetromino, color) {
+                constructor(tetromino, color, type) {
                     this.tetromino = tetromino;
                     this.color = color;
+                    this.type = type;
                     this.tetrominoN = 0;
                     this.activeTetromino = this.tetromino[this.tetrominoN];
                     this.x = 3;
@@ -408,6 +510,9 @@
                     if(!this.collision(1, 0, this.activeTetromino)){
                         this.x++;
                         this.resetLockTimer();
+                        // 平移會取消 T-Spin 判定資格
+                        tSpinFlag = false;
+                        tSpinMini = false;
                     }
                 }
 
@@ -415,24 +520,45 @@
                     if(!this.collision(-1, 0, this.activeTetromino)){
                         this.x--;
                         this.resetLockTimer();
+                        tSpinFlag = false;
+                        tSpinMini = false;
                     }
                 }
 
+                // [升級] 改用完整 SRS 踢牆表 (JLSTZ)，讓 T 方塊能踢入縫隙做出 T-Spin
                 rotate(dir) {
                     let nextPatternN = (this.tetrominoN + dir + this.tetromino.length) % this.tetromino.length;
                     let nextPattern = this.tetromino[nextPatternN];
-                    let kick = 0;
-                    
-                    if(this.collision(0, 0, nextPattern)){
-                        if(this.x > COLS/2) kick = -1; else kick = 1;
+
+                    let kicks;
+                    if (this.type === 'O') {
+                        kicks = [[0, 0]];
+                    } else if (this.type === 'I') {
+                        // I 型維持原本簡化的單一水平微調，未套用完整 SRS I 型表
+                        kicks = [[0, 0], (this.x > COLS / 2) ? [-1, 0] : [1, 0]];
+                    } else {
+                        kicks = SRS_KICKS[this.tetrominoN + ',' + nextPatternN] || [[0, 0]];
                     }
-                    
-                    if(!this.collision(kick, 0, nextPattern)){
-                        this.x += kick;
-                        this.tetrominoN = nextPatternN;
-                        this.activeTetromino = this.tetromino[this.tetrominoN];
-                        this.resetLockTimer();
+
+                    for (let i = 0; i < kicks.length; i++) {
+                        const [kx, ky] = kicks[i];
+                        if (!this.collision(kx, ky, nextPattern)) {
+                            this.x += kx;
+                            this.y += ky;
+                            this.tetrominoN = nextPatternN;
+                            this.activeTetromino = this.tetromino[this.tetrominoN];
+                            this.resetLockTimer();
+
+                            if (this.type === 'T') {
+                                evaluateTSpin(this, i);
+                            } else {
+                                tSpinFlag = false;
+                                tSpinMini = false;
+                            }
+                            return;
+                        }
                     }
+                    // 所有踢牆測試都失敗，旋轉取消，方塊維持原狀
                 }
 
                 drop() {
@@ -467,13 +593,15 @@
                         }
                     }
                     // 消行邏輯
+                    let clearedCount = 0;
                     for(let r = 0; r < ROWS; r++){
                         let isRowFull = true;
                         for(let c = 0; c < COLS; c++){
                             isRowFull = isRowFull && (board[r][c] != "VACANT");
                         }
                         if(isRowFull){
-                            for(let y = r; y > 1; y--){
+                            // 把消除行以上的所有行整體往下移一格 (含第 0 行)
+                            for(let y = r; y > 0; y--){
                                 for(let c = 0; c < COLS; c++){
                                     board[y][c] = board[y-1][c];
                                 }
@@ -481,7 +609,7 @@
                             for(let c = 0; c < COLS; c++){
                                 board[0][c] = "VACANT";
                             }
-                            score += 100 * level;
+                            clearedCount++;
                             lines++;
                             if (lines % 15 === 0) {
                                 level++;
@@ -489,7 +617,24 @@
                             }
                         }
                     }
-                    
+                    // 計分：T-Spin 與一般消行分數互斥 (取代而非疊加)，並顯示提示訊息
+                    if (this.type === 'T' && tSpinFlag) {
+                        const tSpinScoreTable = {
+                            'mini-0': 100, 'mini-1': 200,
+                            'full-0': 400, 'full-1': 800, 'full-2': 1200, 'full-3': 1600
+                        };
+                        const key = (tSpinMini ? 'mini' : 'full') + '-' + clearedCount;
+                        score += (tSpinScoreTable[key] || 1600) * level;
+                        showComboMessage(tSpinLabel(tSpinMini, clearedCount));
+                    } else if (clearedCount > 0) {
+                        // 連消獎勵：一次消越多行分數越高 (Tetris 4 消給最高獎勵)
+                        const lineScoreTable = { 1: 100, 2: 300, 3: 500, 4: 800 };
+                        score += (lineScoreTable[clearedCount] || 800) * level;
+                        if (clearedCount === 4) showComboMessage('TETRIS!');
+                    }
+                    tSpinFlag = false;
+                    tSpinMini = false;
+
                     // 重置狀態
                     activeLock = false;
                     updateUI();
@@ -522,7 +667,7 @@
 
             function randomPiece(){
                 let r = Math.floor(Math.random() * PIECES.length);
-                return new Piece(PIECES[r][0], PIECES[r][1]);
+                return new Piece(PIECES[r][0], PIECES[r][1], PIECES[r][2]);
             }
 
             function drawMiniBoard(context, piece) {
@@ -594,6 +739,16 @@
                 let delta = now - dropStart;
                 let speed = Math.max(100, 1000 - (level - 1) * 100);
 
+                // DAS：長按左右鍵超過延遲時間後開始連續移動
+                if (heldKeys.left && now - dasStart.left > DAS_DELAY && now - lastRepeat.left > DAS_INTERVAL) {
+                    p.moveLeft();
+                    lastRepeat.left = now;
+                }
+                if (heldKeys.right && now - dasStart.right > DAS_DELAY && now - lastRepeat.right > DAS_INTERVAL) {
+                    p.moveRight();
+                    lastRepeat.right = now;
+                }
+
                 // 重力邏輯
                 if(delta > speed){
                     p.moveDown();
@@ -631,7 +786,9 @@
                 score = 0; lines = 0; level = 1;
                 gameOver = false; isPaused = false; canHold = true; holdP = null;
                 activeLock = false; // 重置鎖定狀態
-                
+                heldKeys.left = false; heldKeys.right = false; // 重置 DAS 狀態
+                tSpinFlag = false; tSpinMini = false; // 重置 T-Spin 狀態
+
                 holdCtx.clearRect(0, 0, 80, 80);
                 
                 p = randomPiece();
@@ -647,16 +804,58 @@
 
             document.addEventListener("keydown", (e) => {
                 if (gameOver) return;
-                if (e.key === 'p' || e.key === 'P') { /* Paused Logic if needed */ }
+                if (e.key === 'p' || e.key === 'P') { togglePause(); return; }
                 if (isPaused) return;
-                if(e.keyCode == 37) p.moveLeft();
+                if(e.keyCode == 37) {
+                    if (!heldKeys.left) { p.moveLeft(); heldKeys.left = true; dasStart.left = Date.now(); }
+                }
                 else if(e.keyCode == 38) p.rotate(1);
-                else if(e.keyCode == 39) p.moveRight();
+                else if(e.keyCode == 39) {
+                    if (!heldKeys.right) { p.moveRight(); heldKeys.right = true; dasStart.right = Date.now(); }
+                }
                 else if(e.keyCode == 40) p.moveDown();
                 else if(e.keyCode == 32) p.drop();
                 else if(e.keyCode == 90) p.rotate(-1);
                 else if(e.keyCode == 16) hold();
             });
+
+            document.addEventListener("keyup", (e) => {
+                if (e.keyCode == 37) heldKeys.left = false;
+                else if (e.keyCode == 39) heldKeys.right = false;
+            });
+
+            window.addEventListener("blur", () => {
+                heldKeys.left = false;
+                heldKeys.right = false;
+            });
+
+            // 切換分頁/縮小視窗時自動暫停 (方便上班偷閒被打斷時不會暴斃)
+            document.addEventListener("visibilitychange", () => {
+                if (document.hidden && !gameOver && !isPaused && document.getElementById('overlay').style.display === 'none') {
+                    togglePause();
+                }
+            });
+
+            function togglePause() {
+                if (gameOver) return;
+                isPaused = !isPaused;
+                const overlayEl = document.getElementById('overlay');
+                const btn = document.querySelector('#overlay .btn');
+                if (isPaused) {
+                    document.querySelector('#overlay h1').innerText = 'PAUSED';
+                    document.querySelector('#overlay p').innerText = '按 P 或點擊按鈕繼續';
+                    btn.innerText = 'Resume';
+                    btn.setAttribute('onclick', 'togglePause()');
+                    overlayEl.style.display = 'flex';
+                } else {
+                    overlayEl.style.display = 'none';
+                    btn.setAttribute('onclick', 'startGame()');
+                    // 避免暫停期間累積的時間造成恢復瞬間強制下落/鎖定
+                    dropStart = Date.now();
+                    lockStart = Date.now();
+                    gameLoop();
+                }
+            }
 
             window.addEventListener("keydown", function(e) {
                 if(["Space","ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
@@ -681,6 +880,7 @@
             drawBoard();
 
             window.startGame = startGame;
+            window.togglePause = togglePause;
             window.handleMobileInput = handleMobileInput;
         })();
     </script>
