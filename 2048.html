@@ -116,24 +116,6 @@
         .v2048 { background: #ffb000; color: #3d2c00; box-shadow: 0 0 24px rgba(255, 176, 0, 0.65); }
         .vsuper{ background: #ff8a00; color: #2b1800; box-shadow: 0 0 26px rgba(255, 138, 0, 0.7); }
 
-        /* --- 覆蓋層 --- */
-        #overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(13, 17, 23, 0.9);
-            backdrop-filter: blur(4px);
-            border-radius: 10px;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            z-index: 20;
-        }
-        #overlay.show { display: flex; }
-        #overlay h2 { font-size: 2rem; color: var(--accent); }
-        #overlay p { color: var(--text-muted); font-size: 0.9rem; }
-
         @media (max-width: 768px) {
             :root { --tile: min(19vw, 84px); --gap: 10px; }
             .brand { font-size: 1.9rem; }
@@ -166,24 +148,28 @@
             <button class="btn" id="new-game">新遊戲</button>
         </div>
 
-        <div id="board">
-            <div id="overlay">
-                <h2 id="overlay-title">Game Over</h2>
-                <p id="overlay-msg"></p>
-                <button class="btn" id="overlay-btn">再玩一次</button>
-            </div>
+        <div id="board"></div>
+    </div>
+
+    <!-- 共用覆蓋層 (開始 / 結束 / 勝利) -->
+    <div class="game-overlay" id="game-overlay">
+        <div class="overlay-title" id="overlay-title">2048</div>
+        <div class="overlay-sub" id="overlay-sub"></div>
+        <div class="overlay-stats" id="overlay-stats"></div>
+        <button class="overlay-btn" id="overlay-btn">開始遊戲</button>
+        <div class="overlay-controls hidden" id="overlay-controls">
+            <div><span class="key">←</span><span class="key">↑</span><span class="key">→</span><span class="key">↓</span> 或 <span class="key">WASD</span> 移動</div>
+            <div>手機可直接在盤面上滑動</div>
+            <div>相同數字相撞會合併，湊出 2048 就贏了</div>
         </div>
     </div>
 
+    <script src="game-ui.js"></script>
     <script>
         const SIZE = 4;
         const boardEl = document.getElementById('board');
         const scoreEl = document.getElementById('score');
         const bestEl = document.getElementById('best');
-        const overlay = document.getElementById('overlay');
-        const overlayTitle = document.getElementById('overlay-title');
-        const overlayMsg = document.getElementById('overlay-msg');
-        const overlayBtn = document.getElementById('overlay-btn');
 
         let grid = [];       // SIZE x SIZE，存 tile 物件或 null
         let tiles = new Map(); // id -> { id, value, r, c, el }
@@ -280,9 +266,20 @@
             grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
             score = 0; won = false; finished = false;
             scoreEl.textContent = '0';
-            overlay.classList.remove('show');
+            GameUI.hide();
             spawnRandom();
             spawnRandom();
+        }
+
+        function showStartScreen() {
+            GameUI.show({
+                title: '2048',
+                sub: '合併數字，湊出 2048',
+                stats: best ? `最高分 ${best}` : '',
+                button: '開始遊戲',
+                controls: true,
+                onButton: newGame
+            });
         }
 
         // dir: 'left' | 'right' | 'up' | 'down'
@@ -327,7 +324,13 @@
                             gained += newValue;
                             if (newValue === 2048 && !won) {
                                 won = true;
-                                setTimeout(() => showOverlay('You Win! 🎉', `達成 2048！目前分數 ${score}`, '繼續挑戰'), 160);
+                                setTimeout(() => GameUI.show({
+                                    title: 'YOU WIN! 🎉',
+                                    sub: '達成 2048',
+                                    stats: `目前分數 ${score}`,
+                                    button: '繼續挑戰',
+                                    onButton: () => GameUI.hide()
+                                }), 160);
                             }
                             moved = true;
                         }
@@ -356,7 +359,13 @@
             spawnRandom();
             if (!hasMoves()) {
                 finished = true;
-                showOverlay('Game Over', `沒有可移動的步數了 · 得分 ${score}`, '再玩一次');
+                GameUI.show({
+                    title: 'GAME OVER',
+                    sub: '沒有可移動的步數了',
+                    stats: `得分 ${score} · 最高分 ${best}`,
+                    button: '再玩一次',
+                    onButton: newGame
+                });
             }
         }
 
@@ -372,13 +381,6 @@
             return false;
         }
 
-        function showOverlay(title, msg, btnText) {
-            overlayTitle.textContent = title;
-            overlayMsg.textContent = msg;
-            overlayBtn.textContent = btnText;
-            overlay.classList.add('show');
-        }
-
         // --- 輸入 ---
         const KEY_DIRS = {
             ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down',
@@ -390,7 +392,7 @@
             const dir = KEY_DIRS[e.key];
             if (!dir) return;
             e.preventDefault();
-            if (overlay.classList.contains('show')) return;
+            if (GameUI.isVisible) return;
             move(dir);
         });
 
@@ -402,7 +404,7 @@
         }, { passive: true });
 
         boardEl.addEventListener('touchend', (e) => {
-            if (!touchStart || overlay.classList.contains('show')) { touchStart = null; return; }
+            if (!touchStart || GameUI.isVisible) { touchStart = null; return; }
             const t = e.changedTouches[0];
             const dx = t.clientX - touchStart.x;
             const dy = t.clientY - touchStart.y;
@@ -412,13 +414,10 @@
         });
 
         document.getElementById('new-game').addEventListener('click', newGame);
-        overlayBtn.addEventListener('click', () => {
-            // 達成 2048 的提示只是恭喜，關掉繼續玩；真的沒步數才重開
-            if (finished) newGame();
-            else overlay.classList.remove('show');
-        });
 
-        newGame();
+        // 先鋪好空盤面當背景，再蓋上開始畫面
+        grid = Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+        showStartScreen();
     </script>
 </body>
 </html>

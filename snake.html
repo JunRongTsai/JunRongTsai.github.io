@@ -80,34 +80,6 @@
             display: block;
         }
 
-        /* --- 狀態訊息 (開始/暫停/結束) --- */
-        #status-overlay {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            background: rgba(13, 17, 23, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid var(--accent);
-            display: none; /* 預設隱藏 */
-            z-index: 10;
-        }
-        #status-overlay h2 { margin-bottom: 10px; color: var(--accent); }
-        #status-overlay p { font-size: 0.9rem; color: #8b949e; margin-bottom: 15px; }
-        
-        .btn {
-            background: var(--accent);
-            color: #0d1117;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        .btn:hover { opacity: 0.9; }
-
         /* --- 虛擬按鍵 (手機版顯示) --- */
         .mobile-controls {
             display: none;
@@ -151,11 +123,17 @@
     <!-- 遊戲畫布 -->
     <canvas id="gameCanvas" width="400" height="400"></canvas>
 
-    <!-- 狀態覆蓋層 (Start / Game Over / Pause) -->
-    <div id="status-overlay">
-        <h2 id="overlay-title">Ready?</h2>
-        <p id="overlay-msg">Press Start or Space to play</p>
-        <button class="btn" onclick="startGame()">Start Game</button>
+    <!-- 共用覆蓋層 (開始 / 結束 / 暫停) -->
+    <div class="game-overlay" id="game-overlay">
+        <div class="overlay-title" id="overlay-title">SNAKE</div>
+        <div class="overlay-sub" id="overlay-sub"></div>
+        <div class="overlay-stats" id="overlay-stats"></div>
+        <button class="overlay-btn" id="overlay-btn">開始遊戲</button>
+        <div class="overlay-controls hidden" id="overlay-controls">
+            <div><span class="key">←</span><span class="key">↑</span><span class="key">→</span><span class="key">↓</span> 控制方向</div>
+            <div><span class="key">Space</span> 暫停 / 繼續</div>
+            <div>吃到食物會變長，每 5 分加快一級</div>
+        </div>
     </div>
 
     <!-- 手機虛擬搖桿 -->
@@ -166,16 +144,13 @@
         <div class="control-btn" style="grid-area: right;" ontouchstart="changeDirection('RIGHT', event)"><i class="fa-solid fa-arrow-right"></i></div>
     </div>
 
+    <script src="game-ui.js"></script>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
         const levelEl = document.getElementById('level');
         const highScoreEl = document.getElementById('highScore');
-        const overlay = document.getElementById('status-overlay');
-        const overlayTitle = document.getElementById('overlay-title');
-        const overlayMsg = document.getElementById('overlay-msg');
-        const startBtn = document.querySelector('#status-overlay .btn');
 
         // --- 遊戲參數 ---
         const box = 20; // 格子大小
@@ -215,8 +190,17 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             drawSnake(); // 畫出初始蛇
             drawFood();  // 畫出初始食物
+        }
 
-            showOverlay('Ready?', 'Space / Enter 或點擊開始', 'Start Game');
+        function showStartScreen() {
+            GameUI.show({
+                title: 'SNAKE',
+                sub: '經典貪食蛇',
+                stats: Number(highScore) ? `最高分 ${highScore}` : '',
+                button: '開始遊戲',
+                controls: true,
+                onButton: startGame
+            });
         }
 
         function createFood() {
@@ -273,11 +257,8 @@
                 event.preventDefault();
             }
 
-            // Ready / Game Over 畫面：Space 或 Enter 直接開始
-            if (overlay.style.display === 'block' && !isPaused) {
-                if (key == 32 || key == 13) startGame();
-                return;
-            }
+            // 覆蓋層顯示中 (開始 / 結束 / 暫停畫面)：按鍵交給 GameUI 處理
+            if (GameUI.isVisible) return;
 
             // 空白鍵 (32) -> 暫停/繼續
             if (key == 32) {
@@ -296,7 +277,7 @@
         // 手機版觸控控制
         function changeDirection(newDir, e) {
             if (e) e.preventDefault();
-            if (overlay.style.display === 'block' && !isPaused) return;
+            if (GameUI.isVisible) return;
             if (newDir == "LEFT" && appliedDir != "RIGHT") d = "LEFT";
             if (newDir == "UP" && appliedDir != "DOWN") d = "UP";
             if (newDir == "RIGHT" && appliedDir != "LEFT") d = "RIGHT";
@@ -390,7 +371,7 @@
         function startGame() {
             if (game) clearInterval(game);
             init();
-            overlay.style.display = 'none';
+            GameUI.hide();
             d = "RIGHT"; // 預設向右跑
             appliedDir = "RIGHT";
             game = setInterval(draw, gameSpeed);
@@ -403,7 +384,13 @@
             if (score > localStorage.getItem('snakeHighScore')) {
                 localStorage.setItem('snakeHighScore', score);
             }
-            showOverlay('Game Over!', `Score: ${score}`, 'Try Again');
+            GameUI.show({
+                title: 'GAME OVER',
+                sub: '撞到牆壁或自己了',
+                stats: `得分 ${score} · 最高分 ${highScore}`,
+                button: '再玩一次',
+                onButton: startGame
+            });
         }
 
         function winGame() {
@@ -412,38 +399,42 @@
             if (score > localStorage.getItem('snakeHighScore')) {
                 localStorage.setItem('snakeHighScore', score);
             }
-            showOverlay('You Win!', `完美通關！Score: ${score}`, 'Play Again');
+            GameUI.show({
+                title: 'YOU WIN! 🎉',
+                sub: '完美通關，整個棋盤都是你的',
+                stats: `得分 ${score}`,
+                button: '再玩一次',
+                onButton: startGame
+            });
         }
 
         function togglePause() {
-            if (isGameOver || overlay.style.display === 'block' && !isPaused) return;
-            
+            if (isGameOver || (GameUI.isVisible && !isPaused)) return;
+
             isPaused = !isPaused;
             if (isPaused) {
-                showOverlay('Paused', 'Press Space to Continue', 'Resume');
-                startBtn.setAttribute('onclick', 'togglePause()'); // 按鈕改為繼續
+                GameUI.show({
+                    title: 'PAUSED',
+                    sub: '經典貪食蛇',
+                    stats: `目前得分 ${score} · 等級 ${level}`,
+                    button: '繼續遊戲',
+                    onButton: togglePause
+                });
             } else {
-                overlay.style.display = 'none';
-                startBtn.setAttribute('onclick', 'startGame()'); // 恢復按鈕功能
+                GameUI.hide();
             }
-        }
-
-        function showOverlay(title, msg, btnText) {
-            overlayTitle.innerText = title;
-            overlayMsg.innerText = msg;
-            startBtn.innerText = btnText;
-            overlay.style.display = 'block';
         }
 
         // 切換分頁/縮小視窗時自動暫停 (方便上班偷閒被打斷時不會暴斃)
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden && !isGameOver && !isPaused && overlay.style.display !== 'block') {
+            if (document.hidden && !isGameOver && !isPaused && !GameUI.isVisible) {
                 togglePause();
             }
         });
 
-        // 頁面載入時
+        // 頁面載入時：先畫好初始畫面，再蓋上遊戲首頁
         init();
+        showStartScreen();
 
     </script>
 </body>

@@ -133,29 +133,6 @@
         .n4 { color: #bc8cff; } .n5 { color: #ffa657; } .n6 { color: #39c5cf; }
         .n7 { color: #f0f6fc; } .n8 { color: #8b949e; }
 
-        /* --- 覆蓋層 --- */
-        #overlay {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            background: rgba(13, 17, 23, 0.95);
-            padding: 22px 30px;
-            border-radius: 10px;
-            border: 1px solid var(--accent);
-            display: none;
-            z-index: 10;
-            white-space: nowrap;
-        }
-        #overlay h2 { margin-bottom: 8px; color: var(--accent); font-size: 1.5rem; }
-        #overlay p { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 14px; }
-        .btn {
-            background: var(--accent); color: #0d1117;
-            border: none; padding: 8px 22px; border-radius: 5px;
-            font-weight: bold; font-size: 1rem; font-family: inherit; cursor: pointer;
-        }
-        .btn:hover { opacity: 0.9; }
-
         .hint { font-size: 0.78rem; color: var(--text-muted); text-align: center; }
         #flag-mode { display: none; }
 
@@ -197,17 +174,27 @@
 
         <div id="board-wrap">
             <div id="board"></div>
-            <div id="overlay">
-                <h2 id="overlay-title">Cleared!</h2>
-                <p id="overlay-msg"></p>
-                <button class="btn" id="overlay-btn">再玩一次</button>
-            </div>
         </div>
 
         <div class="hint">左鍵翻開 · 右鍵插旗 · 數字上按左鍵快速展開</div>
         <button id="flag-mode">🚩 旗標模式</button>
     </div>
 
+    <!-- 共用覆蓋層 (開始 / 結束 / 暫停) -->
+    <div class="game-overlay" id="game-overlay">
+        <div class="overlay-title" id="overlay-title">MINESWEEPER</div>
+        <div class="overlay-sub" id="overlay-sub"></div>
+        <div class="overlay-stats" id="overlay-stats"></div>
+        <button class="overlay-btn" id="overlay-btn">開始遊戲</button>
+        <div class="overlay-controls hidden" id="overlay-controls">
+            <div>左鍵翻開 · 右鍵插旗</div>
+            <div>數字格上按左鍵可快速展開周圍</div>
+            <div>手機長按插旗，或用旗標模式切換</div>
+            <div>開始後可隨時切換初級 / 中級 / 高級</div>
+        </div>
+    </div>
+
+    <script src="game-ui.js"></script>
     <script>
         const LEVELS = {
             beginner:     { cols: 9,  rows: 9,  mines: 10, cell: 34, label: '初級' },
@@ -219,10 +206,6 @@
         const mineCountEl = document.getElementById('mine-count');
         const timerEl = document.getElementById('timer');
         const resetBtn = document.getElementById('reset-btn');
-        const overlay = document.getElementById('overlay');
-        const overlayTitle = document.getElementById('overlay-title');
-        const overlayMsg = document.getElementById('overlay-msg');
-        const overlayBtn = document.getElementById('overlay-btn');
         const flagModeBtn = document.getElementById('flag-mode');
 
         let level = 'beginner';
@@ -246,7 +229,7 @@
             started = false; finished = false; isPaused = false;
             revealedCount = 0; flagCount = 0; elapsed = 0;
 
-            overlay.style.display = 'none';
+            GameUI.hide();
             boardEl.classList.remove('paused');
             resetBtn.textContent = '🙂';
             updateCounters();
@@ -388,7 +371,13 @@
                 } else {
                     msg += ` · 最佳 ${best} 秒`;
                 }
-                showOverlay('Cleared! 🎉', msg, '再玩一次');
+                GameUI.show({
+                    title: 'CLEARED! 🎉',
+                    sub: '所有地雷都被標出來了',
+                    stats: msg,
+                    button: '再玩一次',
+                    onButton: newGame
+                });
             } else {
                 // 攤開所有地雷，插錯的旗打叉
                 cells.forEach(c => {
@@ -400,15 +389,26 @@
                         c.el.textContent = '✗';
                     }
                 });
-                showOverlay('Game Over', `${LEVELS[level].label} · 踩到地雷了`, '再玩一次');
+                GameUI.show({
+                    title: 'GAME OVER',
+                    sub: '踩到地雷了',
+                    stats: `${LEVELS[level].label} · 用時 ${elapsed} 秒`,
+                    button: '再玩一次',
+                    onButton: newGame
+                });
             }
         }
 
-        function showOverlay(title, msg, btnText) {
-            overlayTitle.textContent = title;
-            overlayMsg.textContent = msg;
-            overlayBtn.textContent = btnText;
-            overlay.style.display = 'block';
+        function showStartScreen() {
+            const bestSec = Number(localStorage.getItem('minesweeperBest_' + level)) || 0;
+            GameUI.show({
+                title: 'MINESWEEPER',
+                sub: '踩地雷',
+                stats: bestSec ? `${LEVELS[level].label}最佳時間 ${bestSec} 秒` : '',
+                button: '開始遊戲',
+                controls: true,
+                onButton: newGame
+            });
         }
 
         // --- 計時與計數 ---
@@ -494,12 +494,6 @@
         });
 
         resetBtn.addEventListener('click', () => newGame());
-        // 覆蓋層按鈕在「暫停」和「結束」兩種狀態下功能不同，用同一個處理器分流，
-        // 避免兩個監聽器同時觸發 (暫停後按繼續會連帶重開一局)
-        overlayBtn.addEventListener('click', () => {
-            if (isPaused) resume();
-            else newGame();
-        });
 
         flagModeBtn.addEventListener('click', () => {
             flagMode = !flagMode;
@@ -513,18 +507,26 @@
                 isPaused = true;
                 stopTimer();
                 boardEl.classList.add('paused');
-                showOverlay('Paused', '離開分頁時自動暫停', '繼續遊戲');
+                GameUI.show({
+                    title: 'PAUSED',
+                    sub: '離開分頁時自動暫停',
+                    stats: `${LEVELS[level].label} · 已用時 ${elapsed} 秒`,
+                    button: '繼續遊戲',
+                    onButton: resume
+                });
             }
         });
 
         function resume() {
             isPaused = false;
             boardEl.classList.remove('paused');
-            overlay.style.display = 'none';
+            GameUI.hide();
             startTimer();
         }
 
+        // 先鋪好盤面當背景，再蓋上遊戲首頁
         newGame();
+        showStartScreen();
     </script>
 </body>
 </html>

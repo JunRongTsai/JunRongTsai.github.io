@@ -111,52 +111,6 @@
             display: block;
         }
 
-        /* 狀態覆蓋層 */
-        #overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(13, 17, 23, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            backdrop-filter: blur(5px);
-        }
-
-        #overlay h1 { font-size: 4rem; color: var(--accent); margin-bottom: 10px; text-shadow: 0 0 20px rgba(88,166,255,0.6); }
-        #overlay p { font-size: 1.2rem; color: var(--text-main); margin-bottom: 40px; }
-        
-        .btn {
-            background: var(--accent); color: #0d1117;
-            border: none; padding: 15px 40px;
-            border-radius: 5px; font-weight: bold; font-size: 1.5rem;
-            cursor: pointer; transition: 0.2s;
-        }
-        .btn:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--accent); }
-
-        .controls-hint {
-            margin-top: 50px;
-            font-size: 1rem;
-            color: var(--text-muted);
-            text-align: left;
-            line-height: 2;
-            background: rgba(255,255,255,0.05);
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .key {
-            display: inline-block;
-            background: #333;
-            padding: 2px 8px;
-            border-radius: 4px;
-            border-bottom: 3px solid #111;
-            font-family: monospace;
-            color: #fff;
-            margin: 0 4px;
-            font-weight: bold;
-        }
-
         /* 手機控制項 */
         #mobile-controls {
             display: none;
@@ -188,7 +142,6 @@
             /* 手機上自動縮放 Canvas 以適應螢幕 */
             canvas#tetrisCanvas { height: 60vh; width: auto; max-width: 100%; }
             #mobile-controls { display: grid; }
-            .controls-hint { display: none; }
         }
     </style>
 
@@ -247,24 +200,22 @@
         <div class="m-btn m-btn-drop" ontouchstart="handleMobileInput('DROP', event)">HARD DROP</div>
     </div>
 
-    <!-- 覆蓋層 -->
-    <div id="overlay">
-        <h1>TETRIS</h1>
-        <p>Ready to Battle?</p>
-        <button class="btn" onclick="startGame()">Start Game</button>
-        
-        <div class="controls-hint">
-            <div><span class="key">←</span> <span class="key">→</span> 移動</div>
-            <div><span class="key">↑</span> 順時針轉</div>
-            <div><span class="key">Z</span> 逆時針轉</div>
-            <div><span class="key">↓</span> 軟降</div>
-            <div><span class="key">Space</span> 硬降 (Hard Drop)</div>
-            <div><span class="key">Shift</span> 暫存 (Hold)</div>
-            <div><span class="key">P</span> 暫停</div>
-            <div style="margin-top:10px; font-size:0.85rem; opacity:0.8;">支援 T-Spin 判定加分</div>
+    <!-- 共用覆蓋層 (開始 / 結束 / 暫停) -->
+    <div class="game-overlay" id="game-overlay">
+        <div class="overlay-title" id="overlay-title">TETRIS</div>
+        <div class="overlay-sub" id="overlay-sub"></div>
+        <div class="overlay-stats" id="overlay-stats"></div>
+        <button class="overlay-btn" id="overlay-btn">開始遊戲</button>
+        <div class="overlay-controls hidden" id="overlay-controls">
+            <div><span class="key">←</span><span class="key">→</span> 移動 (長按連續移動)</div>
+            <div><span class="key">↑</span> 順時針轉 · <span class="key">Z</span> 逆時針轉</div>
+            <div><span class="key">↓</span> 軟降 · <span class="key">Space</span> 硬降</div>
+            <div><span class="key">Shift</span> 暫存 (Hold) · <span class="key">P</span> 暫停</div>
+            <div>支援 T-Spin 判定加分</div>
         </div>
     </div>
 
+    <script src="game-ui.js"></script>
     <script>
         (function() {
             const canvas = document.getElementById('tetrisCanvas');
@@ -740,10 +691,24 @@
 
             function handleGameOver() {
                 gameOver = true;
-                document.getElementById('overlay').style.display = 'flex';
-                document.querySelector('#overlay h1').innerText = "GAME OVER";
-                document.querySelector('#overlay p').innerText = `Score: ${score} | Level: ${level}`;
-                document.querySelector('.btn').innerText = "Try Again";
+                GameUI.show({
+                    title: 'GAME OVER',
+                    sub: '方塊堆到頂了',
+                    stats: `得分 ${score} · 等級 ${level} · 消除 ${lines} 行`,
+                    button: '再玩一次',
+                    onButton: startGame
+                });
+            }
+
+            function showStartScreen() {
+                GameUI.show({
+                    title: 'TETRIS',
+                    sub: '俄羅斯方塊',
+                    stats: Number(highScore) ? `最高分 ${highScore}` : '',
+                    button: '開始遊戲',
+                    controls: true,
+                    onButton: startGame
+                });
             }
 
             function gameLoop(){
@@ -809,7 +774,7 @@
                 drawNextPiece();
                 updateUI();
                 
-                document.getElementById('overlay').style.display = 'none';
+                GameUI.hide();
                 if (animationFrame) cancelAnimationFrame(animationFrame);
                 dropStart = Date.now();
                 gameLoop();
@@ -846,7 +811,7 @@
 
             // 切換分頁/縮小視窗時自動暫停 (方便上班偷閒被打斷時不會暴斃)
             document.addEventListener("visibilitychange", () => {
-                if (document.hidden && !gameOver && !isPaused && document.getElementById('overlay').style.display === 'none') {
+                if (document.hidden && !gameOver && !isPaused && !GameUI.isVisible) {
                     togglePause();
                 }
             });
@@ -854,17 +819,16 @@
             function togglePause() {
                 if (gameOver || !p) return; // 遊戲還沒開始就不能暫停 (否則會蓋掉起始畫面且無法復原)
                 isPaused = !isPaused;
-                const overlayEl = document.getElementById('overlay');
-                const btn = document.querySelector('#overlay .btn');
                 if (isPaused) {
-                    document.querySelector('#overlay h1').innerText = 'PAUSED';
-                    document.querySelector('#overlay p').innerText = '按 P 或點擊按鈕繼續';
-                    btn.innerText = 'Resume';
-                    btn.setAttribute('onclick', 'togglePause()');
-                    overlayEl.style.display = 'flex';
+                    GameUI.show({
+                        title: 'PAUSED',
+                        sub: '俄羅斯方塊',
+                        stats: `得分 ${score} · 等級 ${level}`,
+                        button: '繼續遊戲',
+                        onButton: togglePause
+                    });
                 } else {
-                    overlayEl.style.display = 'none';
-                    btn.setAttribute('onclick', 'startGame()');
+                    GameUI.hide();
                     // 避免暫停期間累積的時間造成恢復瞬間強制下落/鎖定
                     dropStart = Date.now();
                     lockStart = Date.now();
@@ -895,9 +859,9 @@
 
             createBoard();
             drawBoard();
+            showStartScreen();
 
-            window.startGame = startGame;
-            window.togglePause = togglePause;
+            // 手機控制項用 inline ontouchstart，需要掛到 window 才叫得到
             window.handleMobileInput = handleMobileInput;
         })();
     </script>
