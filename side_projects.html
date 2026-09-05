@@ -216,7 +216,23 @@
                 </div>
                 <div class="game-title">俄羅斯方塊</div>
             </div>
-            
+
+            <!-- 踩地雷卡片 -->
+            <div class="game-card" onclick="playGame('minesweeper.html', '踩地雷 (Minesweeper)')">
+                <div class="game-thumbnail">
+                    <i class="fa-solid fa-bomb"></i>
+                </div>
+                <div class="game-title">踩地雷</div>
+            </div>
+
+            <!-- 2048 卡片 -->
+            <div class="game-card" onclick="playGame('2048.html', '2048')">
+                <div class="game-thumbnail">
+                    <i class="fa-solid fa-table-cells-large"></i>
+                </div>
+                <div class="game-title">2048</div>
+            </div>
+
             <!-- 更多遊戲 -->
             <div class="game-card" onclick="alert('開發中...')">
                 <div class="game-thumbnail">
@@ -254,7 +270,7 @@
             // 3. 設定 Iframe 內容
             const frame = document.getElementById('game-frame');
             // 各遊戲畫面實際所需高度不同（例如俄羅斯方塊 320x640 畫布較高），依遊戲調整 iframe 高度避免上下被裁切
-            const frameHeights = { 'tetris.html': 700 };
+            const frameHeights = { 'tetris.html': 700, 'minesweeper.html': 640, '2048.html': 660 };
             frame.style.height = (frameHeights[url] || 600) + 'px';
             frame.src = url;
 
