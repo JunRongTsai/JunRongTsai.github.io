@@ -2,7 +2,7 @@
 // 每款遊戲只要在 body 內放一份 .game-overlay 標準結構 (見任一遊戲頁)，
 // 就能透過 GameUI.show() 取得一致的標題卡、開始按鈕與操作說明。
 (function () {
-    let root, titleEl, subEl, statsEl, btnEl, controlsEl;
+    let root, titleEl, subEl, statsEl, btnEl, btn2El, controlsEl;
 
     function ensure() {
         if (root) return true;
@@ -12,6 +12,7 @@
         subEl = document.getElementById('overlay-sub');
         statsEl = document.getElementById('overlay-stats');
         btnEl = document.getElementById('overlay-btn');
+        btn2El = document.getElementById('overlay-btn2');
         controlsEl = document.getElementById('overlay-controls');
         return true;
     }
@@ -27,6 +28,13 @@
             statsEl.textContent = opts.stats || '';
             btnEl.textContent = opts.button || '開始遊戲';
             btnEl.onclick = opts.onButton || null;
+            // 次要按鈕 (例如選模式、切換模式)，沒給就隱藏
+            if (btn2El) {
+                const s = opts.secondary;
+                btn2El.textContent = s ? s.button : '';
+                btn2El.onclick = s ? (s.onButton || null) : null;
+                btn2El.classList.toggle('hidden', !s);
+            }
             if (controlsEl) controlsEl.classList.toggle('hidden', !opts.controls);
             root.classList.remove('hidden');
         },

@@ -111,6 +111,10 @@
             display: block;
         }
 
+        .panel-box.hidden { display: none; }
+        /* 計時數字較長，縮一點才不會撐破面板 */
+        #timeValue, #bestTime { font-size: 1.15rem; }
+
         /* 手機控制項 */
         #mobile-controls {
             display: none;
@@ -179,13 +183,22 @@
                 <div class="panel-title">NEXT</div>
                 <canvas id="nextCanvas" width="80" height="80" class="mini-canvas"></canvas>
             </div>
-            <div class="panel-box">
+            <!-- 馬拉松模式顯示分數，競速模式改成計時，兩組互斥切換 -->
+            <div class="panel-box" id="panel-score">
                 <div class="panel-title">SCORE</div>
                 <div class="panel-value" id="score">0</div>
             </div>
-            <div class="panel-box" style="border-color: gold;">
+            <div class="panel-box" id="panel-high" style="border-color: gold;">
                 <div class="panel-title" style="color: gold;">HIGH</div>
                 <div class="panel-value" id="highScore" style="color: gold;">0</div>
+            </div>
+            <div class="panel-box hidden" id="panel-time">
+                <div class="panel-title">TIME</div>
+                <div class="panel-value" id="timeValue">0.00</div>
+            </div>
+            <div class="panel-box hidden" id="panel-best-time" style="border-color: gold;">
+                <div class="panel-title" style="color: gold;">BEST</div>
+                <div class="panel-value" id="bestTime" style="color: gold;">--</div>
             </div>
         </div>
     </div>
@@ -205,13 +218,18 @@
         <div class="overlay-title" id="overlay-title">TETRIS</div>
         <div class="overlay-sub" id="overlay-sub"></div>
         <div class="overlay-stats" id="overlay-stats"></div>
-        <button class="overlay-btn" id="overlay-btn">開始遊戲</button>
+        <div class="overlay-actions">
+            <button class="overlay-btn" id="overlay-btn">開始遊戲</button>
+            <button class="overlay-btn secondary hidden" id="overlay-btn2"></button>
+        </div>
         <div class="overlay-controls hidden" id="overlay-controls">
             <div><span class="key">←</span><span class="key">→</span> 移動 (長按連續移動)</div>
             <div><span class="key">↑</span> 順時針轉 · <span class="key">Z</span> 逆時針轉</div>
             <div><span class="key">↓</span> 軟降 · <span class="key">Space</span> 硬降</div>
             <div><span class="key">Shift</span> 暫存 (Hold) · <span class="key">P</span> 暫停</div>
             <div>支援 T-Spin 判定加分</div>
+            <div style="margin-top:8px;">馬拉松：無盡模式，比分數</div>
+            <div>40 行競速：消滿 40 行，比秒數</div>
         </div>
     </div>
 
@@ -348,6 +366,14 @@
                 clearTimeout(comboMsgTimeout);
                 comboMsgTimeout = setTimeout(() => { el.style.opacity = '0'; }, 1200);
             }
+
+            // --- 遊戲模式 ---
+            // marathon: 原本的無盡模式，比分數
+            // sprint:   消滿 40 行，比秒數
+            const SPRINT_GOAL = 40;
+            let mode = 'marathon';
+            let sprintElapsed = 0;   // 毫秒，用每幀差值累加，所以暫停的時間不會被算進去
+            let lastFrameTime = 0;
 
             let board = [];
             let score = 0;
@@ -599,7 +625,12 @@
                     // 重置狀態
                     activeLock = false;
                     updateUI();
-                    
+
+                    // 競速模式達標就收工 (會把 gameOver 設為 true，下面就不會再生新方塊)
+                    if (mode === 'sprint' && lines >= SPRINT_GOAL && !gameOver) {
+                        handleSprintFinish();
+                    }
+
                     // 生成下一塊
                     if (!gameOver) {
                         p = nextP;
@@ -680,40 +711,100 @@
 
             function updateUI() {
                 document.getElementById('score').innerText = score;
-                document.getElementById('lines').innerText = lines;
+                document.getElementById('lines').innerText = (mode === 'sprint')
+                    ? `${Math.min(lines, SPRINT_GOAL)}/${SPRINT_GOAL}`
+                    : lines;
                 document.getElementById('level').innerText = level;
-                if (score > highScore) {
+                // 競速模式的分數不拿來比，不要污染馬拉松的最高分紀錄
+                if (mode === 'marathon' && score > highScore) {
                     highScore = score;
                     localStorage.setItem('tetrisHighScore', highScore);
                     document.getElementById('highScore').innerText = highScore;
                 }
             }
 
+            function getSprintBest() { return Number(localStorage.getItem('tetrisSprintBest')) || 0; }
+            function formatSeconds(ms) { return (ms / 1000).toFixed(2); }
+
+            function updateTimeDisplay() {
+                document.getElementById('timeValue').innerText = formatSeconds(sprintElapsed);
+            }
+
+            // 依模式切換右側面板：馬拉松看分數，競速看時間
+            function applyModePanels() {
+                const sprint = mode === 'sprint';
+                document.getElementById('panel-score').classList.toggle('hidden', sprint);
+                document.getElementById('panel-high').classList.toggle('hidden', sprint);
+                document.getElementById('panel-time').classList.toggle('hidden', !sprint);
+                document.getElementById('panel-best-time').classList.toggle('hidden', !sprint);
+                const best = getSprintBest();
+                document.getElementById('bestTime').innerText = best ? best.toFixed(2) : '--';
+            }
+
+            function handleSprintFinish() {
+                gameOver = true;   // 讓迴圈與輸入停下，並阻止 lock() 再生出新方塊
+                const seconds = sprintElapsed / 1000;
+                const best = getSprintBest();
+                let stats = `${SPRINT_GOAL} 行 · ${seconds.toFixed(2)} 秒`;
+                if (!best || seconds < best) {
+                    localStorage.setItem('tetrisSprintBest', seconds.toFixed(2));
+                    stats += '（新紀錄！）';
+                } else {
+                    stats += ` · 最佳 ${best.toFixed(2)} 秒`;
+                }
+                document.getElementById('bestTime').innerText = getSprintBest().toFixed(2);
+                GameUI.show({
+                    title: 'FINISH! 🎉',
+                    sub: `${SPRINT_GOAL} 行競速完成`,
+                    stats,
+                    button: '再挑戰一次',
+                    secondary: { button: '選擇模式', onButton: showStartScreen },
+                    onButton: () => startGame('sprint')
+                });
+            }
+
             function handleGameOver() {
                 gameOver = true;
+                const currentMode = mode;
                 GameUI.show({
                     title: 'GAME OVER',
                     sub: '方塊堆到頂了',
-                    stats: `得分 ${score} · 等級 ${level} · 消除 ${lines} 行`,
+                    stats: currentMode === 'sprint'
+                        ? `只消了 ${lines}/${SPRINT_GOAL} 行 · 用時 ${formatSeconds(sprintElapsed)} 秒`
+                        : `得分 ${score} · 等級 ${level} · 消除 ${lines} 行`,
                     button: '再玩一次',
-                    onButton: startGame
+                    secondary: { button: '選擇模式', onButton: showStartScreen },
+                    onButton: () => startGame(currentMode)
                 });
             }
 
             function showStartScreen() {
+                const records = [];
+                if (Number(highScore)) records.push(`馬拉松最高分 ${highScore}`);
+                const sprintBest = getSprintBest();
+                if (sprintBest) records.push(`${SPRINT_GOAL} 行最佳 ${sprintBest.toFixed(2)} 秒`);
                 GameUI.show({
                     title: 'TETRIS',
-                    sub: '俄羅斯方塊',
-                    stats: Number(highScore) ? `最高分 ${highScore}` : '',
-                    button: '開始遊戲',
+                    sub: '俄羅斯方塊 · 選擇模式',
+                    stats: records.join(' · '),
+                    button: '馬拉松模式',
+                    secondary: { button: `${SPRINT_GOAL} 行競速`, onButton: () => startGame('sprint') },
                     controls: true,
-                    onButton: startGame
+                    onButton: () => startGame('marathon')
                 });
             }
 
             function gameLoop(){
                 if (isPaused || gameOver) return;
                 let now = Date.now();
+
+                // 競速計時：累加每幀的實際間隔，暫停時迴圈沒在跑，自然不會被計入
+                if (mode === 'sprint') {
+                    sprintElapsed += now - lastFrameTime;
+                    updateTimeDisplay();
+                }
+                lastFrameTime = now;
+
                 let delta = now - dropStart;
                 let speed = Math.max(100, 1000 - (level - 1) * 100);
 
@@ -759,24 +850,30 @@
                 animationFrame = requestAnimationFrame(gameLoop);
             }
 
-            function startGame() {
+            function startGame(selectedMode) {
+                if (selectedMode) mode = selectedMode;
+                applyModePanels();
+
                 createBoard();
                 score = 0; lines = 0; level = 1;
+                sprintElapsed = 0;
                 gameOver = false; isPaused = false; canHold = true; holdP = null;
                 activeLock = false; // 重置鎖定狀態
                 heldKeys.left = false; heldKeys.right = false; // 重置 DAS 狀態
                 tSpinFlag = false; tSpinMini = false; // 重置 T-Spin 狀態
 
                 holdCtx.clearRect(0, 0, 80, 80);
-                
+
                 p = randomPiece();
                 nextP = randomPiece();
                 drawNextPiece();
                 updateUI();
-                
+                updateTimeDisplay();
+
                 GameUI.hide();
                 if (animationFrame) cancelAnimationFrame(animationFrame);
                 dropStart = Date.now();
+                lastFrameTime = Date.now();
                 gameLoop();
             }
 
@@ -822,16 +919,19 @@
                 if (isPaused) {
                     GameUI.show({
                         title: 'PAUSED',
-                        sub: '俄羅斯方塊',
-                        stats: `得分 ${score} · 等級 ${level}`,
+                        sub: mode === 'sprint' ? `${SPRINT_GOAL} 行競速` : '馬拉松模式',
+                        stats: mode === 'sprint'
+                            ? `${lines}/${SPRINT_GOAL} 行 · ${formatSeconds(sprintElapsed)} 秒`
+                            : `得分 ${score} · 等級 ${level}`,
                         button: '繼續遊戲',
                         onButton: togglePause
                     });
                 } else {
                     GameUI.hide();
-                    // 避免暫停期間累積的時間造成恢復瞬間強制下落/鎖定
+                    // 避免暫停期間累積的時間造成恢復瞬間強制下落/鎖定，計時器同理
                     dropStart = Date.now();
                     lockStart = Date.now();
+                    lastFrameTime = Date.now();
                     // 舊迴圈可能還有一幀排程中，先取消再重啟，否則會變成兩條迴圈同時跑
                     if (animationFrame) cancelAnimationFrame(animationFrame);
                     gameLoop();
@@ -859,6 +959,7 @@
 
             createBoard();
             drawBoard();
+            applyModePanels();
             showStartScreen();
 
             // 手機控制項用 inline ontouchstart，需要掛到 window 才叫得到
