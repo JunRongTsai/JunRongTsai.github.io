@@ -657,8 +657,23 @@
                 }
             }
 
+            // [升級] 7-bag 隨機 (官方 Guideline 的 Random Generator)
+            // 把 7 種方塊洗成一袋依序發完，再補新的一袋。
+            // 純隨機每顆獨立抽，會出現連續同款或長時間抽不到 I 的情況；
+            // 7-bag 保證每 7 顆各出現一次、同款最多間隔 12 顆、最多只會連續出現 2 顆。
+            let pieceBag = [];
+
+            function refillBag() {
+                pieceBag = PIECES.map((_, i) => i);
+                for (let i = pieceBag.length - 1; i > 0; i--) {   // Fisher-Yates 洗牌
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pieceBag[i], pieceBag[j]] = [pieceBag[j], pieceBag[i]];
+                }
+            }
+
             function randomPiece(){
-                let r = Math.floor(Math.random() * PIECES.length);
+                if (!pieceBag.length) refillBag();
+                const r = pieceBag.pop();
                 return new Piece(PIECES[r][0], PIECES[r][1], PIECES[r][2]);
             }
 
@@ -855,6 +870,7 @@
                 applyModePanels();
 
                 createBoard();
+                pieceBag = [];   // 每局都從全新的一袋開始，開局的分佈保證才會成立
                 score = 0; lines = 0; level = 1;
                 sprintElapsed = 0;
                 gameOver = false; isPaused = false; canHold = true; holdP = null;
