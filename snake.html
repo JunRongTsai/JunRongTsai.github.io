@@ -136,6 +136,7 @@
             <div><span class="key">←</span><span class="key">↑</span><span class="key">→</span><span class="key">↓</span> 控制方向</div>
             <div><span class="key">Space</span> 暫停 / 繼續</div>
             <div>吃到食物會變長，每 5 分加快一級</div>
+            <div>20 分後速度達到最快，之後固定不變</div>
         </div>
     </div>
 
@@ -166,7 +167,11 @@
         let game; // Loop
         let isPaused = false;
         let isGameOver = false;
-        const BASE_SPEED = 100; // 毫秒 (越小越快)
+        // 難度曲線：每 5 分升一級加快一次，到第 5 級 (20 分) 達到最快後就固定不再變化
+        const BASE_SPEED = 140;  // 起始速度 (毫秒，越小越快)
+        const SPEED_STEP = 15;   // 每升一級加快的毫秒數
+        const MAX_LEVEL = 5;     // 20 分 = 第 5 級，之後速度封頂
+        const MIN_SPEED = BASE_SPEED - (MAX_LEVEL - 1) * SPEED_STEP;  // = 80ms
         let gameSpeed = BASE_SPEED;
 
         // --- 讀取最高分 (localStorage) ---
@@ -185,7 +190,7 @@
             isGameOver = false;
             isPaused = false;
             scoreEl.innerText = score;
-            levelEl.innerText = level;
+            updateLevelDisplay();
             createFood();
 
             // 清空畫布
@@ -234,19 +239,24 @@
             food = freeCells[Math.floor(Math.random() * freeCells.length)];
         }
 
-        // 隨分數提升難度：每 5 分升一級，速度隨等級加快 (下限 50ms)
+        // 隨分數提升難度：每 5 分升一級，第 5 級 (20 分) 之後速度固定
         function updateSpeed() {
-            const newLevel = Math.floor(score / 5) + 1;
+            const newLevel = Math.min(Math.floor(score / 5) + 1, MAX_LEVEL);
             if (newLevel !== level) {
                 level = newLevel;
-                levelEl.innerText = level;
+                updateLevelDisplay();
             }
-            const newSpeed = Math.max(50, BASE_SPEED - (level - 1) * 8);
+            const newSpeed = Math.max(MIN_SPEED, BASE_SPEED - (level - 1) * SPEED_STEP);
             if (newSpeed !== gameSpeed) {
                 gameSpeed = newSpeed;
                 clearInterval(game);
                 game = setInterval(draw, gameSpeed);
             }
+        }
+
+        // 封頂後標示 MAX，免得等級停著看起來像壞掉
+        function updateLevelDisplay() {
+            levelEl.innerText = level >= MAX_LEVEL ? `${level} MAX` : level;
         }
 
         // --- 鍵盤監聽 ---
